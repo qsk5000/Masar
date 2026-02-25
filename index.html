@@ -1490,15 +1490,17 @@ function updateMizan() {
 // GROUP STUDY
 // ══════════════════════════════════════════════════════════════════
 async function initGroupRoom() {
-  if(!currentUser) return;
+  if (!currentUser) return;
   const roomRef = db.collection('rooms').doc(currentUser.uid);
   const roomDoc = await roomRef.get();
   let code;
-  if(!roomDoc.exists) {
-    code = 'MAS-' + Math.random().toString(36).substring(2,6).toUpperCase();
+  if (!roomDoc.exists) {
+    code = 'MAS-' + Math.random().toString(36).substring(2, 6).toUpperCase();
     await roomRef.set({
-      code, owner:currentUser.uid, members:{},
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      code,
+      owner: currentUser.uid,
+      members: {},
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
   } else {
     code = roomDoc.data().code;
@@ -1506,42 +1508,54 @@ async function initGroupRoom() {
   currentRoomId = currentUser.uid;
   document.getElementById('myInviteCode').textContent = code;
   await roomRef.update({
-    [`members.${currentUser.uid}`]: { name:userProfile.name||'مجهول', status:'online' }
+    [`members.${currentUser.uid}`]: { name: userProfile.name || 'مجهول', status: 'online' }
   });
   listenToRoom(currentUser.uid);
+  updateRoomControlsVisibility();
 }
+
 
 function listenToRoom(roomId) {
   currentRoomId = roomId;
   db.collection('rooms').doc(roomId).onSnapshot(snap => {
-    if(!snap.exists) return;
+    if (!snap.exists) return;
     const data = snap.data();
     const members = data.members || {};
     document.getElementById('membersCount').textContent = Object.keys(members).length + ' / 8';
     renderMembersLive(members);
     syncSessionFromDB(data);
     syncPomodoroFromDB(data);
-    // Focus mode sync
+
     const inputRow = document.getElementById('chatInputRow');
-    if(data.isFocusMode) {
+    if (data.isFocusMode) {
       inputRow.classList.add('chat-disabled');
       document.getElementById('chatInput').placeholder = '🔕 وضع التركيز مفعّل';
     } else {
       inputRow.classList.remove('chat-disabled');
       document.getElementById('chatInput').placeholder = 'اكتب رسالة...';
     }
-    // Update focus toggle UI
+
     const isOn = data.isFocusMode || false;
     document.getElementById('focusToggle').classList.toggle('on', isOn);
     focusModeActive = isOn;
   });
 
   db.collection('rooms').doc(roomId).collection('chat')
-    .orderBy('time','asc').onSnapshot(snap => {
+    .orderBy('time', 'asc').onSnapshot(snap => {
       const msgs = [];
       snap.forEach(d => msgs.push(d.data()));
       renderChatLive(msgs);
     });
+}
+
+function updateRoomControlsVisibility() {
+  const owner = isRoomOwner();
+  document.getElementById('sessionBtn').style.display = owner ? '' : 'none';
+  document.querySelector('[onclick="endSession()"]').style.display = owner ? '' : 'none';
+  document.getElementById('pomBtn').style.display = owner ? '' : 'none';
+  document.querySelector('[onclick="resetPomodoro()"]').style.display = owner ? '' : 'none';
+  document.getElementById('focusModeBar').style.pointerEvents = owner ? '' : 'none';
+  document.getElementById('focusModeBar').style.opacity = owner ? '' : '0.5';
 }
 
 function renderMembersLive(members) {
@@ -1560,16 +1574,33 @@ function renderMembersLive(members) {
   `).join('');
 }
 
+let memberSessionInterval = null;
+let memberSessionBase = 0;
+
 function syncSessionFromDB(data) {
-  if(data.sessionTimer !== undefined) {
-    const h = String(Math.floor(data.sessionTimer/3600)).padStart(2,'0');
-    const m = String(Math.floor((data.sessionTimer%3600)/60)).padStart(2,'0');
-    const s = String(data.sessionTimer%60).padStart(2,'0');
-    const el = document.getElementById('sessionTimer');
-    el.textContent = `${h}:${m}:${s}`;
-    el.classList.toggle('running', data.sessionRunning);
+  if (data.sessionTimer === undefined) return;
+  memberSessionBase = data.sessionTimer;
+
+  const el = document.getElementById('sessionTimer');
+  el.classList.toggle('running', data.sessionRunning);
+
+  clearInterval(memberSessionInterval);
+
+  const fmt = n => String(n).padStart(2, '0');
+  const display = s => {
+    el.textContent = `${fmt(Math.floor(s / 3600))}:${fmt(Math.floor((s % 3600) / 60))}:${fmt(s % 60)}`;
+  };
+  display(memberSessionBase);
+
+  if (data.sessionRunning && !isRoomOwner()) {
+    let local = memberSessionBase;
+    memberSessionInterval = setInterval(() => {
+      local++;
+      display(local);
+    }, 1000);
   }
 }
+
 
 function syncPomodoroFromDB(data) {
   if(data.pomSeconds !== undefined && !pomodoroRunning) {
@@ -1619,17 +1650,17 @@ async function sendChat() {
 }
 
 function groupTab(tab) {
-  ['myRoom','joinRoom','leaderboard'].forEach(t => {
-    const el = document.getElementById('groupTab' + t[0].toUpperCase() + t.slice(1));
-    if(el) el.style.display = t===tab?'block':'none';
+  ['myRoom', 'joinRoom', 'leaderboard'].forEach(t => {
+    const key = 'groupTab' + t[0].toUpperCase() + t.slice(1);
+    const el = document.getElementById(key);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
   });
-  const map = { myRoom:'tabMyRoom', joinRoom:'tabJoinRoom', leaderboard:'tabLeader' };
+  const map = { myRoom: 'tabMyRoom', joinRoom: 'tabJoinRoom', leaderboard: 'tabLeader' };
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(map[tab])?.classList.add('active');
-  if(tab==='joinRoom') renderPublicRooms();
-  if(tab==='leaderboard') renderLeaderboard();
+  if (tab === 'joinRoom') renderPublicRooms();
+  if (tab === 'leaderboard') renderLeaderboard();
 }
-
 function copyCode() {
   const code = document.getElementById('myInviteCode').textContent;
   navigator.clipboard?.writeText(code).catch(()=>{});
@@ -1644,19 +1675,19 @@ function shareRoom() {
 
 async function joinRoom() {
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
-  if(!code) return showToast('⚠️ أدخل الكود');
-  const snap = await db.collection('rooms').where('code','==',code).limit(1).get();
-  if(snap.empty) return showToast('❌ الغرفة غير موجودة');
+  if (!code) return showToast('⚠️ أدخل الكود');
+  const snap = await db.collection('rooms').where('code', '==', code).limit(1).get();
+  if (snap.empty) return showToast('❌ الغرفة غير موجودة');
   const roomDoc = snap.docs[0];
   const roomId = roomDoc.id;
   const members = roomDoc.data().members || {};
-  if(Object.keys(members).length >= 8) return showToast('⚠️ الغرفة ممتلئة (8/8)');
+  if (Object.keys(members).length >= 8) return showToast('⚠️ الغرفة ممتلئة (8/8)');
   await roomDoc.ref.update({
-    [`members.${currentUser.uid}`]: { name:userProfile.name||'ضيف', status:'online' }
+    [`members.${currentUser.uid}`]: { name: userProfile.name || 'ضيف', status: 'online' }
   });
   showToast('🚀 انضممت لـ ' + code);
   listenToRoom(roomId);
-  groupTab('myRoom');
+  updateRoomControlsVisibility();
 }
 
 function joinPublicRoom(code) {
@@ -1716,28 +1747,29 @@ async function renderLeaderboard() {
 function isRoomOwner() { return currentRoomId === currentUser?.uid; }
 
 function toggleSession() {
-  if(!isRoomOwner()) return showToast('⛔ صاحب الغرفة فقط يتحكم');
+  if (!isRoomOwner()) return showToast('⛔ صاحب الغرفة فقط يتحكم');
   sessionRunning = !sessionRunning;
   const btn = document.getElementById('sessionBtn');
-  if(sessionRunning) {
-    db.collection('rooms').doc(currentRoomId).update({ sessionRunning:true });
+  if (sessionRunning) {
+    db.collection('rooms').doc(currentRoomId).update({ sessionRunning: true });
     sessionInterval = setInterval(() => {
       sessionSeconds++;
-      const h = String(Math.floor(sessionSeconds/3600)).padStart(2,'0');
-      const m = String(Math.floor((sessionSeconds%3600)/60)).padStart(2,'0');
-      const s = String(sessionSeconds%60).padStart(2,'0');
+      const h = String(Math.floor(sessionSeconds / 3600)).padStart(2, '0');
+      const m = String(Math.floor((sessionSeconds % 3600) / 60)).padStart(2, '0');
+      const s = String(sessionSeconds % 60).padStart(2, '0');
       document.getElementById('sessionTimer').textContent = `${h}:${m}:${s}`;
       document.getElementById('sessionTimer').classList.add('running');
-      // Sync every 10s
-      if(sessionSeconds % 10 === 0)
-        db.collection('rooms').doc(currentRoomId).update({ sessionTimer:sessionSeconds });
-      // Update focus overlay
-      if(focusModeActive) document.getElementById('focusOverlayTime').textContent = `${h}:${m}:${s}`;
+      if (sessionSeconds % 10 === 0) {
+        db.collection('rooms').doc(currentRoomId).update({ sessionTimer: sessionSeconds });
+      }
+      if (focusModeActive) {
+        document.getElementById('focusOverlayTime').textContent = `${h}:${m}:${s}`;
+      }
     }, 1000);
     btn.innerHTML = '<i class="ri-pause-fill"></i> إيقاف مؤقت';
   } else {
     clearInterval(sessionInterval);
-    db.collection('rooms').doc(currentRoomId).update({ sessionRunning:false });
+    db.collection('rooms').doc(currentRoomId).update({ sessionRunning: false });
     btn.innerHTML = '<i class="ri-play-fill"></i> بدء الجلسة';
     document.getElementById('sessionTimer').classList.remove('running');
   }
