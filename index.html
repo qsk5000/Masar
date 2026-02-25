@@ -1,759 +1,1114 @@
 <!DOCTYPE html>
-
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>مسار | نظام التخطيط الدراسي الذكي</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Masar V3 | مسار</title>
 <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;700;900&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink: #0F1117; --ink-soft: #1E2230; --ink-muted: #3A4058;
-  --surface: #F5F4F0; --surface-warm: #EEECE7; --surface-card: #FAFAF8;
-  --gold: #C9A84C; --gold-light: #E8D49A; --gold-pale: #F7F0DC;
-  --teal: #1A7A6E; --teal-light: #E8F4F2;
-  --rose: #C45C5C; --rose-light: #F7EBEB;
-  --violet: #7C5CBF; --violet-light: #EDE8F7;
-  --text-primary: #0F1117; --text-secondary: #4A5068; --text-muted: #8A91A8;
-  --border: rgba(15,17,23,0.10); --border-strong: rgba(15,17,23,0.18);
-  --shadow-sm: 0 2px 8px rgba(15,17,23,0.06); --shadow-md: 0 8px 32px rgba(15,17,23,0.10);
-  --shadow-lg: 0 20px 60px rgba(15,17,23,0.14);
-  --radius: 16px; --radius-sm: 10px;
-  --nav-h: 72px;
+  --gold: #D4AF37; --gold-dark: #AA8A2E; --gold-glow: rgba(212,175,55,0.25);
+  --gold-soft: rgba(212,175,55,0.12);
+  --ink: #070810; --surface: #0D1018; --card: #111520;
+  --card2: #161D2A; --border: rgba(255,255,255,0.07);
+  --border-gold: rgba(212,175,55,0.2);
+  --text: #E8EDF5; --muted: #6B7280; --muted2: #9CA3AF;
+  --teal: #10B981; --rose: #EF4444; --purple: #7C3AED; --blue: #3B82F6;
+  --cyan: #06B6D4;
+  --font-ar: 'IBM Plex Sans Arabic', sans-serif;
+  --font-display: 'Noto Kufi Arabic', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  --font-syne: 'Syne', sans-serif;
+  --r-sm: 12px; --r-md: 16px; --r-lg: 24px; --r-xl: 32px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-gold: 0 0 30px rgba(212,175,55,0.15);
 }
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--surface);color:var(--text-primary);min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
 
-/* ===== AUTH ===== */
-#authOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#0F1117 0%,#1a1e2e 100%);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
-.auth-card{background:rgba(255,255,255,0.04);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:28px;padding:48px 44px;width:100%;max-width:420px;text-align:center;box-shadow:var(–shadow-lg);}
-.auth-logo{font-family:‘Noto Kufi Arabic’;font-size:2.8em;font-weight:900;color:white;margin-bottom:6px;letter-spacing:-1px;}
-.auth-logo span{color:var(–gold);}
-.auth-sub{color:rgba(255,255,255,0.45);font-size:0.9em;margin-bottom:36px;}
-.auth-tabs{display:flex;background:rgba(255,255,255,0.06);border-radius:12px;padding:4px;margin-bottom:28px;gap:4px;}
-.auth-tab{flex:1;padding:10px;border:none;background:none;color:rgba(255,255,255,0.5);font-family:‘IBM Plex Sans Arabic’;font-size:0.88em;font-weight:600;cursor:pointer;border-radius:9px;transition:all 0.2s;}
-.auth-tab.active{background:var(–gold);color:var(–ink);}
-.auth-field{text-align:right;margin-bottom:14px;}
-.auth-field label{display:block;font-size:0.8em;font-weight:600;color:rgba(255,255,255,0.55);margin-bottom:7px;}
-.auth-field input{width:100%;padding:13px 15px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;font-family:‘IBM Plex Sans Arabic’;font-size:0.92em;color:white;transition:all 0.2s;}
-.auth-field input:focus{outline:none;border-color:var(–gold);background:rgba(201,168,76,0.08);}
-.auth-field input::placeholder{color:rgba(255,255,255,0.25);}
-.auth-btn{width:100%;padding:14px;background:var(–gold);border:none;border-radius:12px;font-family:‘IBM Plex Sans Arabic’;font-size:0.95em;font-weight:700;color:var(–ink);cursor:pointer;transition:all 0.22s;margin-top:6px;}
-.auth-btn:hover{background:#B8933C;transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,0.35);}
-.auth-error{color:var(–rose);font-size:0.82em;margin-top:12px;display:none;padding:10px;background:var(–rose-light);border-radius:8px;}
-.auth-loading{display:inline-block;width:18px;height:18px;border:2px solid transparent;border-top-color:var(–ink);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;}
-@keyframes spin{to{transform:rotate(360deg);}}
-
-/* ===== NAV ===== */
-#bottomNav{position:fixed;bottom:0;left:0;right:0;height:var(–nav-h);background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom,0);border-top:1px solid rgba(0,0,0,0.06);box-shadow:0 -8px 30px rgba(0,0,0,0.06);z-index:1000;}
-.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94a3b8;transition:all 0.3s cubic-bezier(.23,1,.32,1);cursor:pointer;flex:1;padding:8px 4px;position:relative;gap:4px;}
-.nav-ico{font-size:22px;transition:all 0.3s cubic-bezier(.23,1,.32,1);}
-.nav-label{font-size:10px;font-weight:600;font-family:‘IBM Plex Sans Arabic’;}
-.nav-item.active{color:var(–gold);}
-.nav-item.active .nav-ico{transform:translateY(-2px);filter:drop-shadow(0 4px 8px rgba(201,168,76,0.4));}
-.nav-dot{width:4px;height:4px;background:var(–gold);border-radius:50%;margin-top:2px;opacity:0;transition:opacity 0.3s;}
-.nav-item.active .nav-dot{opacity:1;}
-.nav-badge{position:absolute;top:6px;right:calc(50% - 18px);background:var(–rose);color:white;font-size:9px;min-width:16px;height:16px;padding:0 4px;border-radius:100px;border:2px solid white;display:flex;align-items:center;justify-content:center;font-weight:700;}
-
-/* ===== PAGES ===== */
-.page{display:none;position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 16px calc(var(–nav-h) + 24px);}
-.page.active{display:block;animation:pageIn 0.32s cubic-bezier(.23,1,.32,1) both;}
-@keyframes pageIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
-
-/* ===== COMMON HEADERS ===== */
-.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
-.page-eyebrow{font-size:0.7em;font-weight:700;color:var(–gold);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px;}
-.page-title{font-family:‘Noto Kufi Arabic’;font-size:1.75em;font-weight:900;color:var(–ink);line-height:1.2;}
-
-/* ===== CARDS ===== */
-.card{background:var(–surface-card);border:1.5px solid var(–border);border-radius:var(–radius);overflow:hidden;}
-.card-dark{background:var(–ink);border:none;}
-
-/* ===== BUTTONS ===== */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;border-radius:var(–radius-sm);font-family:‘IBM Plex Sans Arabic’;font-size:0.9em;font-weight:700;cursor:pointer;border:none;transition:all 0.22s;text-decoration:none;}
-.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none!important;}
-.btn-primary{background:var(–ink);color:white;}
-.btn-primary:hover:not(:disabled){background:var(–ink-soft);transform:translateY(-1px);box-shadow:var(–shadow-md);}
-.btn-gold{background:var(–gold);color:var(–ink);}
-.btn-gold:hover:not(:disabled){background:#B8933C;transform:translateY(-1px);box-shadow:0 8px 24px rgba(201,168,76,0.35);}
-.btn-ghost{background:none;border:1.5px solid var(–border-strong);color:var(–text-secondary);}
-.btn-ghost:hover{border-color:var(–ink);color:var(–ink);}
-.btn-teal{background:var(–teal);color:white;}
-.btn-teal:hover{background:#156358;}
-.btn-rose{background:var(–rose);color:white;}
-.btn-rose:hover{background:#b04e4e;}
-.btn-sm{padding:8px 16px;font-size:0.82em;}
-.btn-icon{width:38px;height:38px;padding:0;border-radius:10px;}
-.btn-full{width:100%;}
-
-/* ===== FIELDS ===== */
-.field{display:flex;flex-direction:column;gap:6px;}
-.field label{font-size:0.81em;font-weight:600;color:var(–ink-muted);}
-.field input,.field select,.field textarea{padding:11px 14px;border:1.5px solid var(–border-strong);border-radius:var(–radius-sm);font-family:‘IBM Plex Sans Arabic’;font-size:0.9em;color:var(–ink);background:white;transition:all 0.2s;appearance:none;-webkit-appearance:none;}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(–gold);box-shadow:0 0 0 3px rgba(201,168,76,0.12);}
-.field select{background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘12’ height=‘8’ viewBox=‘0 0 12 8’%3E%3Cpath d=‘M1 1l5 5 5-5’ stroke=’%234A5068’ stroke-width=‘1.5’ fill=‘none’ stroke-linecap=‘round’/%3E%3C/svg%3E”);background-repeat:no-repeat;background-position:left 14px center;padding-left:38px;}
-.form-row{display:grid;gap:14px;margin-bottom:16px;}
-.form-row.cols-2{grid-template-columns:1fr 1fr;}
-.form-row.cols-3{grid-template-columns:1fr 1fr 1fr;}
-
-/* ===== TAGS ===== */
-.tag{padding:3px 10px;border-radius:100px;font-size:0.73em;font-weight:600;display:inline-flex;align-items:center;gap:4px;}
-.tag-gold{background:var(–gold-pale);color:#8A6820;border:1px solid var(–gold-light);}
-.tag-teal{background:var(–teal-light);color:var(–teal);}
-.tag-rose{background:var(–rose-light);color:var(–rose);}
-.tag-neutral{background:var(–surface-warm);color:var(–text-secondary);}
-.tag-live{background:var(–rose);color:white;animation:pulseDot 1.5s ease infinite;}
-@keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:0.7;}}
-
-/* ===== TOGGLE ===== */
-.toggle{width:46px;height:26px;background:var(–border-strong);border-radius:100px;position:relative;cursor:pointer;transition:background 0.3s;border:none;flex-shrink:0;}
-.toggle::after{content:’’;width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:3px;right:3px;transition:transform 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.2);}
-.toggle.on{background:var(–gold);}
-.toggle.on::after{transform:translateX(-20px);}
-
-/* ===== PROGRESS ===== */
-.progress-track{height:7px;background:var(–surface-warm);border-radius:100px;overflow:hidden;}
-.progress-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(–gold),var(–teal));transition:width 0.8s cubic-bezier(.23,1,.32,1);}
-
-/* ===== UTILITIES ===== */
-.hidden{display:none!important;}
-.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
-.section-title{font-family:‘Noto Kufi Arabic’;font-size:1.2em;font-weight:900;color:var(–ink);}
-.empty-box{text-align:center;padding:44px 20px;color:var(–text-muted);}
-.empty-box-icon{font-size:2.5em;margin-bottom:12px;opacity:0.3;}
-.btn-delete{background:none;border:1.5px solid var(–border);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(–text-muted);font-size:0.8em;transition:all 0.2s;}
-.btn-delete:hover{border-color:var(–rose);color:var(–rose);background:var(–rose-light);}
-
-/* ===== TOAST ===== */
-#toast{position:fixed;bottom:calc(var(–nav-h) + 16px);left:50%;transform:translateX(-50%) translateY(20px);background:var(–ink);color:white;padding:11px 22px;border-radius:100px;font-size:0.85em;font-weight:600;z-index:9001;opacity:0;transition:all 0.3s cubic-bezier(.23,1,.32,1);pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center;}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-#toast.success{background:var(–teal);}
-#toast.error{background:var(–rose);}
-
-/* ===== WIZARD ===== */
-.wizard-shell{background:var(–surface-card);border:1.5px solid var(–border);border-radius:24px;overflow:hidden;box-shadow:var(–shadow-md);}
-.wizard-steps{display:flex;background:var(–ink);padding:0 24px;overflow-x:auto;scrollbar-width:none;}
-.wizard-steps::-webkit-scrollbar{display:none;}
-.wizard-step-tab{flex:1;min-width:80px;padding:16px 8px;text-align:center;color:rgba(255,255,255,0.3);font-size:0.78em;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;transition:all 0.2s;white-space:nowrap;}
-.wizard-step-tab.active{color:var(–gold);border-bottom-color:var(–gold);}
-.wizard-step-tab.done{color:rgba(255,255,255,0.55);border-bottom-color:var(–teal);}
-.wizard-body{padding:36px 40px;}
-.step-pane{display:none;animation:pageIn 0.28s ease both;}
-.step-pane.active{display:block;}
-.step-header{margin-bottom:26px;}
-.step-num{font-size:0.7em;font-weight:700;color:var(–gold);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:7px;}
-.step-ttl{font-family:‘Noto Kufi Arabic’;font-size:1.6em;font-weight:900;color:var(–ink);}
-.step-desc{color:var(–text-muted);font-size:0.9em;margin-top:5px;line-height:1.55;}
-.wizard-footer{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:22px;border-top:1.5px solid var(–border);}
-
-/* Days Grid */
-.days-grid{display:flex;flex-direction:column;gap:9px;}
-.day-row{display:grid;grid-template-columns:20px 100px 1fr 1fr;align-items:center;gap:12px;padding:13px 16px;background:white;border:1.5px solid var(–border);border-radius:var(–radius-sm);transition:all 0.2s;}
-.day-row:has(input[type=“checkbox”]:checked){border-color:var(–gold-light);background:var(–gold-pale);}
-.day-row.disabled{opacity:0.4;}
-.day-row input[type=“checkbox”]{width:18px;height:18px;accent-color:var(–gold);}
-.day-row input[type=“time”]{padding:8px 12px;border:1.5px solid var(–border-strong);border-radius:8px;font-family:‘IBM Plex Sans Arabic’;font-size:0.86em;background:white;color:var(–ink);}
-.day-row input[type=“time”]:focus{outline:none;border-color:var(–gold);}
-
-/* Subjects */
-.subject-add-box{background:var(–surface-warm);border:2px dashed var(–border-strong);border-radius:var(–radius-sm);padding:20px;margin-bottom:14px;}
-.subjects-list{display:flex;flex-direction:column;gap:9px;}
-.subject-item{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:white;border:1.5px solid var(–border);border-radius:var(–radius-sm);transition:all 0.2s;}
-.subject-item:hover{box-shadow:var(–shadow-sm);}
-.subject-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-
-/* Pref */
-.pref-list{display:flex;flex-direction:column;gap:11px;}
-.pref-item{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;background:white;border:1.5px solid var(–border);border-radius:var(–radius-sm);}
-.pref-item strong{display:block;font-size:0.92em;color:var(–ink);}
-.pref-item span{font-size:0.8em;color:var(–text-muted);margin-top:2px;display:block;}
-
-/* ===== SCHEDULE ===== */
-.today-hero{background:var(–ink);border-radius:22px;padding:32px 36px;position:relative;overflow:hidden;margin-bottom:22px;}
-.today-hero::before{content:’’;position:absolute;top:-80px;right:-80px;width:250px;height:250px;background:var(–gold);opacity:0.05;filter:blur(60px);border-radius:50%;}
-.today-hero::after{content:’’;position:absolute;bottom:-50px;left:-50px;width:180px;height:180px;background:var(–teal);opacity:0.08;filter:blur(50px);border-radius:50%;}
-.today-date{font-size:0.78em;color:rgba(255,255,255,0.45);margin-bottom:4px;}
-.today-title{font-family:‘Noto Kufi Arabic’;font-size:1.7em;font-weight:900;color:white;margin-bottom:20px;position:relative;z-index:1;}
-.today-sessions{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;position:relative;z-index:1;}
-.today-session-card{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:13px;padding:14px;border-right:3px solid var(–gold);transition:all 0.2s;cursor:pointer;}
-.today-session-card:hover{background:rgba(255,255,255,0.11);}
-.today-session-time{font-size:0.75em;color:var(–gold);font-weight:700;margin-bottom:4px;}
-.today-session-subj{font-weight:700;color:white;font-size:0.9em;}
-.today-session-done{font-size:0.72em;color:rgba(255,255,255,0.4);margin-top:3px;}
-
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
-.stat-tile{background:var(–surface-card);border:1.5px solid var(–border);border-radius:var(–radius);padding:18px 16px;position:relative;overflow:hidden;}
-.stat-tile::after{content:’’;position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(–gold),var(–teal));}
-.stat-val{font-family:‘Noto Kufi Arabic’;font-size:2em;font-weight:900;color:var(–ink);line-height:1;}
-.stat-lbl{font-size:0.77em;color:var(–text-muted);margin-top:5px;}
-
-.week-cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
-.day-col{background:var(–surface-card);border:1.5px solid var(–border);border-radius:var(–radius);overflow:hidden;}
-.day-col-head{padding:13px 16px;background:var(–ink);color:white;display:flex;justify-content:space-between;align-items:center;}
-.day-col-name{font-family:‘Noto Kufi Arabic’;font-weight:700;font-size:0.92em;}
-.day-col-cnt{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:2px 8px;border-radius:100px;font-size:0.72em;font-weight:600;}
-.day-col-body{padding:10px;}
-.session-tile{padding:12px 14px;border-radius:var(–radius-sm);margin-bottom:8px;border-right:3px solid var(–gold);background:white;border-top:1px solid var(–border);border-bottom:1px solid var(–border);border-left:1px solid var(–border);cursor:pointer;transition:all 0.2s;position:relative;}
-.session-tile:hover{transform:translateX(-3px);box-shadow:var(–shadow-sm);}
-.session-tile.done{opacity:0.5;border-right-color:var(–teal);}
-.session-tile.done::after{content:‘✓’;position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(–teal);font-weight:900;font-size:0.85em;}
-.session-tile-time{font-size:0.76em;font-weight:700;color:var(–text-muted);margin-bottom:3px;}
-.session-tile-subj{font-weight:700;font-size:0.9em;color:var(–ink);}
-
-.progress-section{margin-top:22px;}
-.progress-grid{display:flex;flex-direction:column;gap:10px;}
-.progress-row{background:var(–surface-card);border:1.5px solid var(–border);border-radius:var(–radius-sm);padding:16px 20px;}
-.progress-row-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.progress-row-name{font-weight:700;font-size:0.9em;}
-.progress-row-pct{font-family:‘Noto Kufi Arabic’;font-size:1.05em;font-weight:900;color:var(–gold);}
-
-/* ===== ROOMS ===== */
-.rooms-hero{background:linear-gradient(135deg,var(–teal) 0%,#0d5548 100%);border-radius:22px;padding:32px 36px;color:white;position:relative;overflow:hidden;margin-bottom:24px;}
-.rooms-hero::before{content:‘🤐’;position:absolute;left:24px;top:50%;transform:translateY(-50%);font-size:6em;opacity:0.08;}
-.rooms-hero h2{font-family:‘Noto Kufi Arabic’;font-size:1.7em;font-weight:900;margin-bottom:7px;}
-.rooms-hero p{opacity:0.8;font-size:0.9em;max-width:480px;line-height:1.6;margin-bottom:18px;}
-
-.room-create-panel{background:var(–surface-card);border:1.5px solid var(–teal);border-radius:var(–radius);padding:24px;margin-bottom:24px;animation:pageIn 0.25s ease;}
-.room-create-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
-.room-create-header h3{font-family:‘Noto Kufi Arabic’;font-size:1.1em;}
-
-.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
-.room-card{background:var(–surface-card);border:1.5px solid var(–border);border-radius:20px;overflow:hidden;transition:all 0.22s;}
-.room-card:hover{transform:translateY(-3px);box-shadow:var(–shadow-md);}
-.room-card-accent{height:4px;}
-.room-card-body{padding:18px;}
-.room-card-topic{font-weight:700;font-size:0.98em;color:var(–ink);margin-bottom:10px;}
-.room-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;}
-.room-host{font-size:0.8em;color:var(–text-muted);display:flex;align-items:center;gap:6px;}
-.room-host-avatar{width:24px;height:24px;border-radius:50%;background:var(–gold-pale);display:flex;align-items:center;justify-content:center;font-size:0.75em;font-weight:700;color:#8A6820;flex-shrink:0;}
-.room-members-count{display:flex;align-items:center;gap:4px;font-size:0.8em;color:var(–teal);font-weight:700;}
-
-/* Timer Overlay */
-#studyTimerOverlay{display:none;position:fixed;inset:0;background:linear-gradient(135deg,#0a0f1a 0%,#0d1a17 100%);z-index:10001;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;}
-.timer-label{font-size:0.75em;font-weight:700;color:var(–gold);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:10px;}
-.timer-topic{font-family:‘Noto Kufi Arabic’;font-size:1.7em;font-weight:900;color:white;margin-bottom:20px;}
-.timer-clock{font-size:min(18vw,120px);font-weight:900;color:var(–gold);font-variant-numeric:tabular-nums;line-height:1;margin-bottom:16px;font-family:‘Noto Kufi Arabic’;text-shadow:0 0 60px rgba(201,168,76,0.3);}
-.timer-members{color:rgba(255,255,255,0.5);font-size:0.9em;margin-bottom:32px;}
-.timer-progress-wrap{width:100%;max-width:380px;height:5px;background:rgba(255,255,255,0.08);border-radius:100px;overflow:hidden;margin-bottom:36px;}
-.timer-progress-fill{height:100%;background:var(–gold);border-radius:100px;transition:width 1s linear;}
-.timer-phase{font-size:0.82em;color:rgba(255,255,255,0.5);margin-bottom:10px;}
-
-/* ===== ARENA ===== */
-.xp-bar-card{background:var(–surface-card);border:1.5px solid var(–border);border-radius:var(–radius);padding:20px 22px;margin-bottom:20px;display:flex;align-items:center;gap:18px;}
-.xp-level-badge{width:54px;height:54px;border-radius:13px;background:var(–gold);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
-.xp-level-badge .lvl-num{font-family:‘Noto Kufi Arabic’;font-size:1.35em;font-weight:900;color:var(–ink);line-height:1;}
-.xp-level-badge .lvl-lbl{font-size:0.58em;font-weight:700;color:rgba(15,17,23,0.55);}
-.xp-bar-info{flex:1;}
-.xp-bar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
-.xp-bar-name{font-weight:700;font-size:0.93em;}
-.xp-bar-count{font-size:0.8em;color:var(–text-muted);}
-
-.arena-layout{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;}
-
-.duel-panel{background:linear-gradient(135deg,#1e2230 0%,#0f1117 100%);border:1px solid rgba(201,168,76,0.25);border-radius:20px;padding:26px;color:white;}
-.duel-panel h3{font-family:‘Noto Kufi Arabic’;margin-bottom:7px;color:var(–gold);font-size:1.15em;}
-.duel-panel p{font-size:0.84em;opacity:0.7;margin-bottom:18px;line-height:1.6;}
-
-.leaderboard-panel{background:var(–surface-card);border:1.5px solid var(–border);border-radius:20px;padding:22px;}
-.leaderboard-panel h3{font-family:‘Noto Kufi Arabic’;font-size:1.1em;margin-bottom:16px;}
-.lb-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(–border);}
-.lb-row:last-child{border-bottom:none;}
-.lb-rank{width:26px;font-family:‘Noto Kufi Arabic’;font-weight:900;font-size:0.88em;text-align:center;flex-shrink:0;color:var(–text-muted);}
-.lb-rank.gold{color:#C9A84C;}.lb-rank.silver{color:#A8A8B3;}.lb-rank.bronze{color:#CD7F32;}
-.lb-avatar{width:32px;height:32px;border-radius:50%;background:var(–gold-pale);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.83em;color:#8A6820;flex-shrink:0;}
-.lb-name{flex:1;font-weight:600;font-size:0.88em;color:var(–ink);}
-.lb-xp{font-family:‘Noto Kufi Arabic’;font-weight:900;font-size:0.9em;color:var(–gold);}
-.lb-level{font-size:0.73em;color:var(–text-muted);margin-top:1px;}
-.lb-me{background:var(–gold-pale);border-radius:10px;padding:0 8px;}
-
-/* Duel Overlay */
-#duelOverlay{display:none;position:fixed;inset:0;background:rgba(10,15,26,0.98);z-index:10002;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;color:white;overflow-y:auto;}
-.duel-close-btn{position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:white;padding:8px 14px;cursor:pointer;font-family:‘IBM Plex Sans Arabic’;font-size:0.82em;}
-.duel-close-btn:hover{background:rgba(255,255,255,0.15);}
-
-/* ===== MIZAN ===== */
-.mizan-hero{background:linear-gradient(135deg,#0F1117 0%,#1a1e2e 100%);border:1px solid rgba(201,168,76,0.2);border-radius:22px;padding:40px;color:white;position:relative;overflow:hidden;text-align:center;margin-bottom:28px;}
-.mizan-hero::before{content:’’;position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:280px;height:280px;background:var(–gold);opacity:0.06;filter:blur(80px);border-radius:50%;}
-.mizan-hero h2{font-family:‘Noto Kufi Arabic’;font-size:2em;font-weight:900;color:var(–gold);margin-bottom:10px;position:relative;z-index:1;}
-.mizan-hero p{opacity:0.8;font-size:0.95em;line-height:1.7;max-width:560px;margin:0 auto 24px;position:relative;z-index:1;}
-
-.mizan-features{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px;}
-.mizan-feat{background:var(–surface-card);border:1.5px solid var(–border);border-radius:18px;padding:20px;display:flex;gap:14px;transition:all 0.25s;opacity:0;transform:translateY(14px);}
-.mizan-feat.visible{opacity:1;transform:translateY(0);}
-.mizan-feat:hover{border-color:var(–gold-light);box-shadow:var(–shadow-sm);transform:translateY(-2px)!important;}
-.mizan-feat-ico{font-size:1.9em;flex-shrink:0;line-height:1;}
-.mizan-feat h4{font-family:‘Noto Kufi Arabic’;font-size:0.93em;margin-bottom:4px;}
-.mizan-feat p{font-size:0.8em;color:var(–text-muted);line-height:1.55;}
-.mizan-warning{background:var(–gold-pale);border-right:4px solid var(–gold);padding:15px 18px;border-radius:12px;font-size:0.84em;color:#8A6820;margin-bottom:22px;line-height:1.55;}
-
-/* ===== RESPONSIVE ===== */
-@media(max-width:780px){
-.arena-layout{grid-template-columns:1fr;}
-.stats-row{grid-template-columns:repeat(2,1fr);}
-.form-row.cols-2,.form-row.cols-3{grid-template-columns:1fr;}
-.mizan-features{grid-template-columns:1fr;}
-.wizard-body{padding:24px 20px;}
-.today-hero{padding:24px 20px;}
-.day-row{grid-template-columns:18px 88px 1fr 1fr;gap:8px;padding:11px 12px;}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html[data-lang="en"] { direction:ltr; }
+  html[data-lang="ar"] { direction:rtl; }
+  html[data-lang="en"] body { font-family:'IBM Plex Sans Arabic',sans-serif; }
+  html[data-lang="ar"] body { font-family:var(--font-ar); }
+body {
+background:var(--ink); color:var(--text); line-height:1.6;
+overflow-x:hidden; min-height:100vh;
 }
-@media(max-width:480px){
-.today-sessions{grid-template-columns:1fr 1fr;}
-.week-cols{grid-template-columns:1fr;}
-.rooms-grid{grid-template-columns:1fr;}
-.stats-row{grid-template-columns:repeat(2,1fr);}
+
+/* ── ANIMATED BG ── */
+body::before {
+content:''; position:fixed; inset:0; z-index:-2;
+background:
+radial-gradient(ellipse 80% 60% at 20% -10%, rgba(212,175,55,0.06) 0%, transparent 60%),
+radial-gradient(ellipse 60% 50% at 80% 110%, rgba(124,58,237,0.05) 0%, transparent 60%),
+var(--ink);
+pointer-events:none;
+}
+body::after {
+content:''; position:fixed; inset:0; z-index:-1;
+background-image:
+linear-gradient(rgba(212,175,55,0.015) 1px, transparent 1px),
+linear-gradient(90deg, rgba(212,175,55,0.015) 1px, transparent 1px);
+background-size:40px 40px;
+mask-image:radial-gradient(ellipse at center, black 30%, transparent 75%);
+pointer-events:none;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(212,175,55,0.3); border-radius:2px; }
+
+/* ── LANG BAR ── */
+#langBar {
+position:fixed; top:16px; inset-inline-end:16px; z-index:10002;
+display:flex; gap:4px; background:rgba(17,21,32,0.9);
+border:1px solid var(--border); border-radius:20px; padding:4px;
+backdrop-filter:blur(20px);
+}
+.lang-btn {
+padding:5px 14px; border-radius:16px; font-size:11px; font-weight:700;
+cursor:pointer; border:none; background:transparent; color:var(--muted); transition:0.2s;
+}
+.lang-btn.active { background:var(--gold); color:var(--ink); }
+
+/* ── AUTH OVERLAY ── */
+#authOverlay {
+position:fixed; inset:0; z-index:10001;
+display:flex; align-items:center; justify-content:center;
+background:var(--ink);
+overflow-y:auto;
+min-height:100vh;
+min-width:100vw;
+top:0; left:0; right:0; bottom:0;
+}
+#authOverlay::before {
+content:''; position:fixed; inset:0;
+background:radial-gradient(ellipse 100% 80% at 50% 0%, rgba(212,175,55,0.08) 0%, transparent 60%);
+pointer-events:none; z-index:0;
+}
+.auth-wrap {
+position:relative; z-index:2; width:90%; max-width:440px;
+padding:20px 0; margin:auto;
+}
+.auth-logo-area { text-align:center; margin-bottom:36px; }
+.auth-logo-main {
+font-family:var(--font-display); font-size:3.2em; font-weight:900;
+background:linear-gradient(135deg, #D4AF37 0%, #F3D16E 50%, #AA8A2E 100%);
+-webkit-background-clip:text; -webkit-text-fill-color:transparent;
+display:inline-block; letter-spacing:4px;
+}
+.auth-logo-sub {
+display:block; font-size:0.85em; color:var(--muted); margin-top:4px;
+letter-spacing:2px; text-transform:uppercase; font-weight:400;
+}
+.auth-card {
+background:var(--card); border:1px solid var(--border);
+border-radius:var(--r-xl); padding:32px 28px;
+box-shadow:0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(212,175,55,0.05);
+}
+.auth-tabs {
+display:flex; gap:0; margin-bottom:28px;
+background:rgba(255,255,255,0.04); border-radius:12px; padding:4px;
+}
+.auth-tab-btn {
+flex:1; padding:9px; border-radius:9px; font-size:13px; font-weight:700;
+cursor:pointer; border:none; background:transparent; color:var(--muted); transition:0.25s;
+font-family:var(--font-ar);
+}
+.auth-tab-btn.active { background:var(--gold); color:var(--ink); }
+.auth-field { margin-bottom:14px; position:relative; }
+.auth-field-icon {
+position:absolute; top:50%; transform:translateY(-50%);
+inset-inline-start:14px; color:var(--muted); font-size:16px; pointer-events:none;
+}
+.auth-input {
+width:100%; padding:13px 14px 13px 42px; border-radius:12px;
+border:1px solid var(--border); background:rgba(255,255,255,0.03); color:white;
+font-size:0.95em; outline:none; transition:border 0.2s, box-shadow 0.2s;
+font-family:var(--font-ar);
+}
+html[data-lang="ar"] .auth-input { padding:13px 42px 13px 14px; }
+.auth-input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,175,55,0.1); }
+.auth-input::placeholder { color:var(--muted); }
+.btn-auth {
+width:100%; padding:14px; border-radius:13px; border:none;
+background:linear-gradient(135deg, var(--gold), var(--gold-dark));
+color:var(--ink); font-size:1em; font-weight:900; cursor:pointer;
+font-family:var(--font-ar); transition:0.25s;
+box-shadow:0 4px 20px rgba(212,175,55,0.3);
+margin-bottom:10px;
+}
+.btn-auth:active { transform:scale(0.98); }
+.btn-google {
+width:100%; padding:12px; border-radius:13px; border:1px solid var(--border);
+background:rgba(255,255,255,0.04); color:var(--text); font-size:0.9em;
+font-weight:600; cursor:pointer; font-family:var(--font-ar);
+display:flex; align-items:center; justify-content:center; gap:10px;
+transition:0.2s;
+}
+.btn-google:hover { background:rgba(255,255,255,0.07); }
+.auth-forgot {
+text-align:center; font-size:0.8em; color:var(--gold); cursor:pointer;
+margin:10px 0 16px; opacity:0.8; transition:0.2s;
+}
+.auth-forgot:hover { opacity:1; }
+
+/* ── BOTTOM NAV ── */
+#bottomNav {
+position:fixed; bottom:16px; left:12px; right:12px; height:68px;
+background:rgba(13,16,24,0.95); backdrop-filter:blur(24px);
+border:1px solid var(--border-gold); border-radius:28px;
+display:flex; justify-content:space-around; align-items:center;
+z-index:1000; box-shadow:0 -4px 30px rgba(0,0,0,0.5), var(--shadow-gold);
+}
+.nav-item {
+position:relative; color:var(--muted); cursor:pointer;
+display:flex; flex-direction:column; align-items:center; gap:2px;
+padding:8px 14px; border-radius:16px; transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.nav-item.active {
+color:var(--gold);
+background:rgba(212,175,55,0.1);
+transform:translateY(-4px);
+}
+.nav-item i { font-size:22px; }
+.nav-item span { font-size:9px; font-weight:700; letter-spacing:0.5px; }
+.notif-dot {
+position:absolute; top:6px; inset-inline-end:10px;
+width:7px; height:7px; background:var(--rose); border-radius:50%;
+border:2px solid var(--ink); animation:pulse-dot 2s infinite;
+}
+@keyframes pulse-dot { 0%,100%{transform:scale(1);} 50%{transform:scale(1.3);} }
+
+/* ── PAGES ── */
+@keyframes pageIn { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+.page { display:none; padding:16px 16px 100px; max-width:900px; margin:0 auto; }
+.page.active { display:block; animation:pageIn 0.35s ease forwards; }
+
+/* ── CARDS ── */
+.card {
+background:var(--card); border:1px solid var(--border);
+border-radius:var(--r-lg); padding:20px;
+box-shadow:var(--shadow); transition:border-color 0.3s, transform 0.3s;
+}
+.card:hover { border-color:var(--border-gold); }
+.card-glow {
+background:linear-gradient(135deg, var(--card) 0%, rgba(212,175,55,0.04) 100%);
+border-color:var(--border-gold);
+box-shadow:var(--shadow), var(--shadow-gold);
+}
+.card-glass {
+background:rgba(17,21,32,0.7); backdrop-filter:blur(16px);
+border:1px solid var(--border);
+}
+
+/* ── HERO CARD ── */
+.hero-card {
+background:linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(17,21,32,1) 60%);
+border:1px solid var(--border-gold); border-radius:var(--r-xl);
+padding:28px; margin-bottom:20px;
+position:relative; overflow:hidden;
+}
+.hero-card::before {
+content:''; position:absolute; top:-40px; inset-inline-end:-40px;
+width:200px; height:200px; border-radius:50%;
+background:radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%);
+pointer-events:none;
+}
+
+/* ── PAGE HEADER ── */
+.page-header {
+display:flex; align-items:center; gap:14px; margin-bottom:24px;
+}
+.page-header-icon {
+width:46px; height:46px; border-radius:14px;
+background:var(--gold-soft); border:1px solid var(--border-gold);
+display:flex; align-items:center; justify-content:center;
+font-size:20px; color:var(--gold); flex-shrink:0;
+}
+.page-title {
+font-family:var(--font-display); font-size:1.3em; font-weight:900;
+line-height:1.2;
+}
+.page-subtitle { font-size:0.82em; color:var(--muted); margin-top:2px; }
+
+/* ── SECTION HEADER ── */
+.sec-header {
+display:flex; align-items:center; justify-content:space-between;
+margin-bottom:14px;
+}
+.sec-title { font-family:var(--font-display); font-size:1em; font-weight:700; }
+.sec-action { font-size:12px; color:var(--gold); cursor:pointer; }
+
+/* ── BADGES ── */
+.badge {
+display:inline-flex; align-items:center; gap:4px;
+padding:3px 9px; border-radius:8px; font-size:10px; font-weight:800;
+}
+.badge-gold { background:linear-gradient(45deg,#D4AF37,#F3D16E); color:var(--ink); }
+.badge-purple { background:rgba(124,58,237,0.2); color:#A78BFA; border:1px solid rgba(124,58,237,0.3); }
+.badge-teal { background:rgba(16,185,129,0.15); color:#34D399; border:1px solid rgba(16,185,129,0.25); }
+.badge-rose { background:rgba(239,68,68,0.15); color:#FCA5A5; border:1px solid rgba(239,68,68,0.25); }
+.badge-live { background:rgba(239,68,68,0.15); color:#FCA5A5; animation:live-pulse 2s infinite; }
+@keyframes live-pulse { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+
+/* ── BUTTONS ── */
+.btn {
+display:inline-flex; align-items:center; justify-content:center;
+gap:8px; padding:12px 22px; border-radius:13px; border:none;
+font-weight:800; cursor:pointer; transition:all 0.25s; font-size:0.9em;
+font-family:var(--font-ar);
+}
+.btn:active { transform:scale(0.96); }
+.btn-primary {
+background:linear-gradient(135deg, var(--gold), var(--gold-dark));
+color:var(--ink); box-shadow:0 4px 16px rgba(212,175,55,0.3);
+}
+.btn-primary:hover { box-shadow:0 6px 24px rgba(212,175,55,0.45); transform:translateY(-1px); }
+.btn-secondary {
+background:rgba(255,255,255,0.06); color:var(--text);
+border:1px solid var(--border);
+}
+.btn-secondary:hover { background:rgba(255,255,255,0.09); }
+.btn-danger { background:rgba(239,68,68,0.15); color:#FCA5A5; border:1px solid rgba(239,68,68,0.2); }
+.btn-purple-solid { background:linear-gradient(135deg,#7C3AED,#5B21B6); color:white; box-shadow:0 4px 16px rgba(124,58,237,0.3); }
+.btn-teal-solid { background:linear-gradient(135deg,#10B981,#059669); color:white; box-shadow:0 4px 16px rgba(16,185,129,0.3); }
+.btn-w100 { width:100%; }
+.btn-sm { padding:8px 16px; font-size:0.82em; border-radius:10px; }
+.btn-icon { width:40px; height:40px; padding:0; border-radius:11px; }
+
+/* ── INPUTS ── */
+.field { margin-bottom:16px; }
+.field-label { display:block; font-size:0.82em; font-weight:600; color:var(--muted2); margin-bottom:6px; }
+.field-input {
+width:100%; padding:12px 14px; border-radius:11px;
+border:1px solid var(--border); background:rgba(255,255,255,0.03);
+color:white; outline:none; transition:border 0.2s, box-shadow 0.2s;
+font-family:var(--font-ar); font-size:0.9em;
+}
+html[data-lang="ar"] .field-input { text-align:right; }
+html[data-lang="en"] .field-input { text-align:left; }
+.field-input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,175,55,0.08); }
+.field-input::placeholder { color:var(--muted); }
+select.field-input { cursor:pointer; }
+
+/* ── GRID LAYOUTS ── */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+@media(max-width:480px) { .grid-4 { grid-template-columns:repeat(2,1fr); } }
+
+/* ── STAT CARD ── */
+.stat-card {
+background:var(--card); border:1px solid var(--border); border-radius:var(--r-md);
+padding:16px 14px; text-align:center;
+transition:border-color 0.3s, transform 0.3s;
+}
+.stat-card:hover { border-color:var(--border-gold); transform:translateY(-2px); }
+.stat-num {
+font-family:var(--font-mono); font-size:1.9em; font-weight:700;
+color:var(--gold); line-height:1; margin-bottom:4px;
+}
+.stat-lbl { font-size:10px; color:var(--muted); font-weight:600; letter-spacing:0.5px; }
+
+/* ── PROGRESS ── */
+.prog-wrap { margin-top:8px; }
+.prog-meta { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-bottom:6px; }
+.prog-bar { background:rgba(255,255,255,0.06); border-radius:99px; height:6px; overflow:hidden; }
+.prog-fill {
+height:100%; border-radius:99px;
+background:linear-gradient(90deg, var(--gold-dark), var(--gold), #F3D16E);
+transition:width 0.9s cubic-bezier(0.34,1.56,0.64,1);
+position:relative;
+}
+.prog-fill::after {
+content:''; position:absolute; right:0; top:50%; transform:translateY(-50%);
+width:10px; height:10px; background:white; border-radius:50%;
+box-shadow:0 0 6px rgba(212,175,55,0.8);
+}
+
+/* ── TASK ITEM ── */
+.task-item {
+display:flex; align-items:center; gap:12px; padding:14px 16px;
+background:rgba(255,255,255,0.025); border-radius:var(--r-sm);
+border:1px solid var(--border);
+border-inline-start:3px solid var(--gold);
+margin-bottom:8px; transition:all 0.25s; cursor:default;
+}
+.task-item.done { opacity:0.45; border-inline-start-color:var(--teal); }
+.task-time {
+font-family:var(--font-mono); color:var(--gold); font-size:0.8em;
+font-weight:700; white-space:nowrap; min-width:45px;
+}
+.task-info { flex:1; min-width:0; }
+.task-subj { font-weight:700; font-size:0.9em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.task-type { font-size:0.72em; color:var(--muted); margin-top:1px; }
+.task-done-btn {
+width:28px; height:28px; border-radius:8px; border:2px solid var(--border);
+background:transparent; cursor:pointer; display:flex; align-items:center;
+justify-content:center; transition:0.2s; flex-shrink:0; color:var(--muted);
+font-size:14px;
+}
+.task-item.done .task-done-btn { background:var(--teal); border-color:var(--teal); color:white; }
+
+/* ── STREAK ── */
+.streak-container { display:flex; align-items:center; gap:12px; }
+.streak-badge {
+background:linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05));
+border:1px solid var(--border-gold); border-radius:var(--r-md);
+padding:12px 16px; text-align:center;
+}
+.streak-fire { font-size:1.8em; animation:flicker 1.5s ease-in-out infinite; display:block; }
+@keyframes flicker { 0%,100%{transform:scale(1) rotate(-2deg);} 50%{transform:scale(1.08) rotate(2deg);} }
+.streak-num { font-family:var(--font-mono); font-size:1.5em; font-weight:700; color:var(--gold); display:block; }
+.streak-lbl { font-size:9px; color:var(--muted); }
+
+/* ── TABS ── */
+.tabs {
+display:flex; gap:6px; margin-bottom:20px;
+overflow-x:auto; padding-bottom:4px; scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar { display:none; }
+.tab-btn {
+padding:8px 18px; border-radius:20px; font-size:12px; font-weight:800;
+cursor:pointer; border:1px solid var(--border); background:transparent;
+color:var(--muted); white-space:nowrap; transition:0.2s; font-family:var(--font-ar);
+}
+.tab-btn.active { background:var(--gold); color:var(--ink); border-color:var(--gold); }
+
+/* ── GROUP ROOM ── */
+.member-chip {
+display:flex; align-items:center; gap:6px; padding:6px 12px;
+background:rgba(255,255,255,0.04); border:1px solid var(--border);
+border-radius:20px; font-size:12px; transition:border-color 0.2s;
+}
+.member-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.member-dot.online { background:var(--teal); box-shadow:0 0 6px rgba(16,185,129,0.6); }
+.member-dot.away { background:#F59E0B; }
+.member-dot.offline { background:var(--muted); }
+
+/* ── SESSION TIMER ── */
+.session-timer-display {
+font-family:var(--font-mono); font-size:2.8em; font-weight:700;
+color:var(--gold); text-align:center; padding:20px;
+letter-spacing:6px; line-height:1;
+text-shadow:0 0 30px rgba(212,175,55,0.4);
+}
+.session-timer-display.running { color:#F3D16E; }
+
+/* ── POMODORO RING ── */
+.pom-container { display:flex; flex-direction:column; align-items:center; padding:10px 0; }
+.pom-ring { position:relative; width:110px; height:110px; }
+.pom-ring svg { transform:rotate(-90deg); overflow:visible; }
+.pom-bg { fill:none; stroke:rgba(255,255,255,0.05); stroke-width:7; }
+.pom-track { fill:none; stroke:rgba(212,175,55,0.15); stroke-width:7; }
+.pom-prog { fill:none; stroke-width:7; stroke-linecap:round; transition:stroke-dashoffset 1s linear; }
+.pom-focus-prog { stroke:var(--gold); filter:drop-shadow(0 0 6px rgba(212,175,55,0.5)); }
+.pom-break-prog { stroke:var(--teal); filter:drop-shadow(0 0 6px rgba(16,185,129,0.5)); }
+.pom-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.pom-time { font-family:var(--font-mono); font-size:1.15em; font-weight:700; }
+.pom-phase { font-size:9px; color:var(--muted); margin-top:2px; }
+
+/* ── CHAT ── */
+.chat-container { max-height:200px; overflow-y:auto; padding:4px 0; }
+.chat-msg { display:flex; gap:8px; margin-bottom:10px; }
+html[data-lang="ar"] .chat-msg { flex-direction:row-reverse; }
+.chat-avatar {
+width:30px; height:30px; border-radius:10px; flex-shrink:0;
+background:linear-gradient(135deg, var(--purple), var(--gold));
+display:flex; align-items:center; justify-content:center;
+font-size:12px; font-weight:800; color:white;
+}
+.chat-bubble {
+background:rgba(255,255,255,0.05); border-radius:12px; padding:8px 12px;
+font-size:0.83em; max-width:78%; border:1px solid var(--border);
+}
+html[data-lang="ar"] .chat-bubble { border-radius:12px 2px 12px 12px; }
+html[data-lang="en"] .chat-bubble { border-radius:2px 12px 12px 12px; }
+.chat-name { font-size:10px; color:var(--muted); margin-bottom:3px; font-weight:700; }
+.chat-input-row { display:flex; gap:8px; margin-top:12px; }
+.chat-input {
+flex:1; padding:10px 14px; border-radius:11px; border:1px solid var(--border);
+background:rgba(255,255,255,0.04); color:white; font-size:0.85em;
+font-family:var(--font-ar); outline:none; transition:border 0.2s;
+}
+html[data-lang="ar"] .chat-input { text-align:right; }
+html[data-lang="en"] .chat-input { text-align:left; }
+.chat-input:focus { border-color:var(--gold); }
+.chat-send-btn {
+width:40px; height:40px; border-radius:11px; border:none;
+background:var(--purple); color:white; cursor:pointer; font-size:18px;
+display:flex; align-items:center; justify-content:center; transition:0.2s;
+flex-shrink:0;
+}
+.chat-send-btn:hover { background:#6D28D9; }
+.chat-disabled { opacity:0.4; pointer-events:none; }
+
+/* ── INVITE CODE ── */
+.invite-code-box {
+font-family:var(--font-mono); font-size:1.5em; font-weight:700;
+color:var(--gold); letter-spacing:6px; text-align:center;
+padding:16px; cursor:pointer; border-radius:14px;
+background:linear-gradient(135deg, rgba(212,175,55,0.07) 0%, rgba(212,175,55,0.03) 100%);
+border:1px dashed rgba(212,175,55,0.4); transition:0.2s;
+}
+.invite-code-box:hover { background:rgba(212,175,55,0.1); }
+
+/* ── FOCUS MODE TOGGLE ── */
+.focus-toggle-row {
+display:flex; align-items:center; gap:12px; padding:12px 16px;
+background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.2);
+border-radius:var(--r-sm); cursor:pointer; transition:0.2s;
+}
+.focus-toggle-row:hover { background:rgba(124,58,237,0.12); }
+.toggle-switch {
+width:40px; height:22px; background:rgba(255,255,255,0.1); border-radius:11px;
+position:relative; transition:0.3s; flex-shrink:0;
+}
+.toggle-switch.on { background:rgba(212,175,55,0.25); }
+.toggle-ball {
+position:absolute; width:18px; height:18px; background:var(--muted);
+border-radius:50%; top:2px; inset-inline-end:2px; transition:0.3s;
+}
+.toggle-switch.on .toggle-ball { background:var(--gold); inset-inline-end:auto; inset-inline-start:2px; }
+
+/* ── ARENA ── */
+.arena-header {
+display:grid; grid-template-columns:1fr auto 1fr; gap:12px;
+align-items:center; margin-bottom:20px;
+}
+.arena-player-card {
+text-align:center; padding:16px 12px;
+background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--r-md);
+}
+.arena-avatar { font-size:1.8em; margin-bottom:6px; }
+.arena-name { font-size:0.85em; font-weight:700; margin-bottom:4px; }
+.arena-score { font-family:var(--font-mono); font-size:2em; font-weight:700; }
+.arena-vs-badge {
+font-family:var(--font-mono); font-size:1.2em; font-weight:700;
+color:var(--rose); background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2);
+border-radius:12px; padding:10px 8px; text-align:center;
+}
+.q-card { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--r-md); padding:18px; }
+.q-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.q-num-badge { font-size:11px; color:var(--muted); font-weight:700; }
+.q-timer-badge {
+font-family:var(--font-mono); font-size:14px; font-weight:700;
+color:var(--gold); background:rgba(212,175,55,0.1); border-radius:8px; padding:4px 10px;
+}
+.q-timer-badge.urgent { color:var(--rose); background:rgba(239,68,68,0.1); animation:pulse-dot 0.5s infinite; }
+.q-text { font-size:1.05em; font-weight:600; line-height:1.6; margin-bottom:16px; }
+.q-opt { padding:13px 16px; border-radius:11px; border:1px solid var(--border);
+cursor:pointer; margin-bottom:8px; transition:0.2s;
+background:rgba(255,255,255,0.025); font-size:0.9em;
+}
+.q-opt:hover { border-color:var(--gold); background:rgba(212,175,55,0.06); }
+.q-opt.correct { border-color:var(--teal); background:rgba(16,185,129,0.12); }
+.q-opt.wrong { border-color:var(--rose); background:rgba(239,68,68,0.1); }
+.arena-input-group {
+display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;
+}
+
+/* ── MIZAN ── */
+.mizan-radar { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+.mizan-stat {
+background:var(--card); border:1px solid var(--border); border-radius:var(--r-md);
+padding:18px 14px; text-align:center; transition:border-color 0.3s;
+}
+.mizan-stat:hover { border-color:var(--border-gold); }
+.mizan-icon { font-size:1.6em; margin-bottom:8px; display:block; }
+.mizan-val { font-family:var(--font-mono); font-size:2em; font-weight:700; color:var(--gold); display:block; }
+.mizan-lbl { font-size:11px; color:var(--muted); font-weight:600; }
+.guardian-card {
+background:linear-gradient(135deg, rgba(124,58,237,0.08), rgba(17,21,32,1));
+border:1px solid rgba(124,58,237,0.2); border-radius:var(--r-lg); padding:20px;
+margin-bottom:16px;
+}
+
+/* ── TOAST ── */
+#toast {
+position:fixed; top:24px; left:50%; transform:translateX(-50%) translateY(-20px);
+background:var(--card2); color:var(--text); padding:12px 22px;
+border-radius:14px; font-weight:700; z-index:99999; font-size:0.9em;
+border:1px solid var(--border-gold); box-shadow:var(--shadow), var(--shadow-gold);
+opacity:0; pointer-events:none; transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+white-space:nowrap; max-width:90vw;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align:center; padding:40px 20px; color:var(--muted); }
+.empty-state-icon { font-size:3em; margin-bottom:12px; opacity:0.5; }
+.empty-state-text { font-size:0.9em; }
+
+/* ── LOADING ── */
+.loading-spin {
+width:36px; height:36px; border-radius:50%;
+border:3px solid rgba(212,175,55,0.15); border-top-color:var(--gold);
+animation:spin 0.8s linear infinite; margin:0 auto;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── LEADERBOARD ── */
+.lb-item {
+display:flex; align-items:center; gap:14px; padding:14px 0;
+border-bottom:1px solid var(--border);
+}
+.lb-item:last-child { border-bottom:none; }
+.lb-rank { font-family:var(--font-mono); font-size:1.2em; width:32px; text-align:center; }
+.lb-avatar {
+width:36px; height:36px; border-radius:11px;
+background:linear-gradient(135deg, var(--purple), var(--gold));
+display:flex; align-items:center; justify-content:center;
+font-size:14px; font-weight:800; color:white; flex-shrink:0;
+}
+.lb-info { flex:1; min-width:0; }
+.lb-name { font-weight:700; font-size:0.9em; }
+.lb-meta { font-size:11px; color:var(--muted); }
+.lb-hours { font-family:var(--font-mono); color:var(--gold); font-weight:700; }
+
+/* ── PUBLIC ROOMS ── */
+.room-item {
+display:flex; align-items:center; gap:14px; padding:14px;background:rgba(255,255,255,0.025); border:1px solid var(--border);
+border-radius:var(--r-md); margin-bottom:8px; transition:border-color 0.2s;
+}
+.room-item:hover { border-color:rgba(124,58,237,0.4); }
+.room-icon {
+width:40px; height:40px; border-radius:11px;
+background:rgba(124,58,237,0.15); display:flex; align-items:center;
+justify-content:center; font-size:18px; flex-shrink:0; color:#A78BFA;
+}
+
+/* ── ONBOARDING ── */
+.onboard-steps {
+display:flex; gap:8px; margin-bottom:24px; align-items:center;
+}
+.onboard-step {
+flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,0.1); transition:0.4s;
+}
+.onboard-step.done { background:var(--gold); }
+
+/* ── SUBJECT TAGS ── */
+.subj-tag {
+display:inline-flex; align-items:center; gap:6px;
+padding:7px 12px; border-radius:10px; font-size:12px; font-weight:700;
+background:rgba(255,255,255,0.05); border:1px solid var(--border); margin:4px;
+transition:0.2s;
+}
+.subj-tag:hover { border-color:var(--border-gold); }
+.subj-tag .rm-btn { color:var(--rose); cursor:pointer; font-size:14px; }
+
+/* ── NOTIFICATIONS PANEL ── */
+#notifPanel {
+position:fixed; top:56px; inset-inline-end:16px; width:300px;
+background:var(--card2); border:1px solid var(--border);
+border-radius:var(--r-lg); padding:16px; z-index:9990;
+box-shadow:var(--shadow); display:none;
+}
+.notif-item {
+padding:10px 0; border-bottom:1px solid var(--border); font-size:0.85em;
+}
+.notif-item:last-child { border-bottom:none; }
+
+/* ── SCHEDULE GRID ── */
+.schedule-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+
+/* ── FOCUS MODE OVERLAY ── */
+#focusOverlay {
+position:fixed; inset:0; background:rgba(7,8,16,0.97); z-index:9998;
+display:none; align-items:center; justify-content:center; flex-direction:column;
+text-align:center;
+}
+#focusOverlay.active { display:flex; }
+.focus-overlay-timer {
+font-family:var(--font-mono); font-size:5em; font-weight:700;
+color:var(--gold); letter-spacing:8px; text-shadow:0 0 60px rgba(212,175,55,0.4);
+}
+
+/* ── CONFETTI STAR ── */
+.confetti { position:fixed; pointer-events:none; z-index:99998; font-size:1.5em; animation:confettiFall 1.5s ease forwards; }
+@keyframes confettiFall {
+0% { opacity:1; transform:translateY(0) rotate(0); }
+100% { opacity:0; transform:translateY(80px) rotate(180deg); }
+}
+
+/* ── RESPONSIVE TWEAKS ── */
+@media(max-width:400px) {
+.session-timer-display { font-size:2.2em; letter-spacing:4px; }
+.grid-2 { grid-template-columns:1fr; }
 }
 </style>
 
 </head>
 <body>
 
-<!-- AUTH OVERLAY -->
 
-<div id="authOverlay">
-  <div class="auth-card">
-    <div class="auth-logo">م<span>سار</span></div>
-    <div class="auth-sub">نظام التخطيط الدراسي الذكي</div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchAuthTab('login',this)">تسجيل الدخول</button>
-      <button class="auth-tab" onclick="switchAuthTab('signup',this)">حساب جديد</button>
-    </div>
-    <div class="auth-field">
-      <label>البريد الإلكتروني</label>
-      <input type="email" id="userEmail" placeholder="example@mail.com" autocomplete="email">
-    </div>
-    <div class="auth-field">
-      <label>كلمة المرور</label>
-      <input type="password" id="userPass" placeholder="••••••••" autocomplete="current-password">
-    </div>
-    <p id="authError" class="auth-error"></p>
-    <button class="auth-btn" id="authBtn" onclick="handleAuth()">
-      <span id="authBtnText">تسجيل الدخول</span>
-    </button>
-  </div>
+<!-- ══════════════════════════════ LANG BAR ══════════════════════════════ -->
+
+<div id="langBar">
+  <button class="lang-btn active" onclick="setLang('ar')">عربي</button>
+  <button class="lang-btn" onclick="setLang('en')">EN</button>
 </div>
 
-<!-- BOTTOM NAV -->
-
-<nav id="bottomNav" class="hidden">
-  <div class="nav-item active" onclick="goPage('pageSetup')" data-page="pageSetup">
-    <i class="ri-edit-box-line nav-ico"></i>
-    <span class="nav-label">الإعداد</span>
-    <div class="nav-dot"></div>
-  </div>
-  <div class="nav-item" onclick="goPage('pageSchedule')" data-page="pageSchedule">
-    <i class="ri-calendar-todo-line nav-ico"></i>
-    <span class="nav-label">الجدول</span>
-    <div class="nav-dot"></div>
-  </div>
-  <div class="nav-item" onclick="goPage('pageRooms')" data-page="pageRooms">
-    <i class="ri-focus-3-line nav-ico"></i>
-    <span class="nav-label">الغرف</span>
-    <div class="nav-dot"></div>
-    <div class="nav-badge hidden" id="roomsBadge">0</div>
-  </div>
-  <div class="nav-item" onclick="goPage('pageArena')" data-page="pageArena">
-    <i class="ri-sword-line nav-ico"></i>
-    <span class="nav-label">التحدي</span>
-    <div class="nav-dot"></div>
-  </div>
-  <div class="nav-item" onclick="goPage('pageMizan')" data-page="pageMizan">
-    <i class="ri-shield-flash-line nav-ico"></i>
-    <span class="nav-label">الميزان</span>
-    <div class="nav-dot"></div>
-  </div>
-</nav>
-
-<!-- PAGE: SETUP -->
-
-<div id="pageSetup" class="page active">
-  <div class="page-header">
-    <div>
-      <div class="page-eyebrow">✦ نظام مسار</div>
-      <div class="page-title" id="setupPageTitle">إعداد مسارك</div>
-    </div>
-    <button class="btn btn-ghost btn-sm" onclick="signOut()"><i class="ri-logout-circle-r-line"></i> خروج</button>
-  </div>
-
-  <div class="wizard-shell">
-    <div class="wizard-steps">
-      <div class="wizard-step-tab active" data-stab="1">١ — معلوماتك</div>
-      <div class="wizard-step-tab" data-stab="2">٢ — أوقاتك</div>
-      <div class="wizard-step-tab" data-stab="3">٣ — المواد</div>
-      <div class="wizard-step-tab" data-stab="4">٤ — تفضيلات</div>
-    </div>
-    <div class="wizard-body">
-
-```
-  <!-- Step 1 -->
-  <div class="step-pane active" data-spane="1">
-    <div class="step-header">
-      <div class="step-num">الخطوة الأولى</div>
-      <div class="step-ttl">من أنت؟</div>
-      <div class="step-desc">أخبرنا عنك لنبني خطة مخصصة لك</div>
-    </div>
-    <div class="form-row cols-2">
-      <div class="field"><label>الاسم الكامل</label><input type="text" id="studentName" placeholder="مثال: أحمد محمد"></div>
-      <div class="field"><label>المرحلة الدراسية</label>
-        <select id="studyLevel">
-          <option value="">— اختر —</option>
-          <option value="متوسط">المتوسطة</option>
-          <option value="ثانوي">الثانوية</option>
-          <option value="جامعة">الجامعة</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row cols-2">
-      <div class="field"><label>ساعات النوم اليومية</label>
-        <select id="sleepHours">
-          <option value="8" selected>8 ساعات (موصى به)</option>
-          <option value="7">7 ساعات</option>
-          <option value="6">6 ساعات</option>
-        </select>
-      </div>
-      <div class="field"><label>وقت ذروة التركيز</label>
-        <select id="learningStyle">
-          <option value="morning">الصباح الباكر (6–10 ص)</option>
-          <option value="afternoon">بعد الظهر (2–6 م)</option>
-          <option value="evening">المساء (8–12 م)</option>
-          <option value="flexible" selected>مرن</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- Step 2 -->
-  <div class="step-pane" data-spane="2">
-    <div class="step-header">
-      <div class="step-num">الخطوة الثانية</div>
-      <div class="step-ttl">أوقات فراغك</div>
-      <div class="step-desc">حدد الأيام والأوقات التي يمكنك الدراسة فيها</div>
-    </div>
-    <div id="timeAvailability" class="days-grid"></div>
-  </div>
-
-  <!-- Step 3 -->
-  <div class="step-pane" data-spane="3">
-    <div class="step-header">
-      <div class="step-num">الخطوة الثالثة</div>
-      <div class="step-ttl">المواد الدراسية</div>
-      <div class="step-desc">أضف المواد التي تريد تنظيمها في جدولك</div>
-    </div>
-    <div class="subject-add-box">
-      <div class="form-row cols-2">
-        <div class="field"><label>اسم المادة</label><input type="text" id="subjectName" placeholder="مثال: الرياضيات"></div>
-        <div class="field"><label>ساعات أسبوعية</label><input type="number" id="subjectHours" min="1" max="20" placeholder="4" value="4"></div>
-      </div>
-      <div class="form-row cols-3">
-        <div class="field"><label>الأولوية</label>
-          <select id="subjectPriority">
-            <option value="high">عالية 🔴</option>
-            <option value="medium">متوسطة 🟡</option>
-            <option value="low">منخفضة 🟢</option>
-          </select>
-        </div>
-        <div class="field"><label>الصعوبة</label>
-          <select id="subjectDifficulty">
-            <option value="hard">صعبة</option>
-            <option value="medium" selected>متوسطة</option>
-            <option value="easy">سهلة</option>
-          </select>
-        </div>
-        <div class="field"><label>نوع الدراسة</label>
-          <select id="subjectType">
-            <option value="lecture">محاضرة</option>
-            <option value="practice">حل تمارين</option>
-            <option value="review">مراجعة</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row cols-2">
-        <div class="field"><label>تاريخ الامتحان (اختياري)</label><input type="date" id="subjectExamDate"></div>
-        <div style="display:flex;align-items:flex-end">
-          <button class="btn btn-primary btn-sm btn-full" onclick="addSubject()"><i class="ri-add-line"></i> إضافة المادة</button>
-        </div>
-      </div>
-    </div>
-    <div id="subjectsList" class="subjects-list"></div>
-  </div>
-
-  <!-- Step 4 -->
-  <div class="step-pane" data-spane="4">
-    <div class="step-header">
-      <div class="step-num">الخطوة الرابعة</div>
-      <div class="step-ttl">التفضيلات</div>
-      <div class="step-desc">خصص جدولك حسب أسلوبك</div>
-    </div>
-    <div class="pref-list">
-      <div class="pref-item">
-        <div><strong>توزيع متوازن</strong><span>عدم تكرار نفس المادة يومين متتاليين</span></div>
-        <button class="toggle on" id="toggleBalance" onclick="this.classList.toggle('on')"></button>
-      </div>
-      <div class="pref-item">
-        <div><strong>تدرج الصعوبة</strong><span>البدء بالمواد المتوسطة ثم الصعبة تدريجياً</span></div>
-        <button class="toggle" id="toggleGradual" onclick="this.classList.toggle('on')"></button>
-      </div>
-      <div class="pref-item">
-        <div><strong>ترك يوم راحة</strong><span>إبقاء الجمعة خالية من المذاكرة</span></div>
-        <button class="toggle on" id="toggleRest" onclick="this.classList.toggle('on')"></button>
-      </div>
-    </div>
-  </div>
-
-  <div class="wizard-footer">
-    <button class="btn btn-ghost" id="prevBtn" onclick="prevStep()" style="display:none"><i class="ri-arrow-left-line"></i> السابق</button>
-    <div style="flex:1"></div>
-    <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">التالي <i class="ri-arrow-right-line"></i></button>
-    <button class="btn btn-gold hidden" id="generateBtn" onclick="generateSmartSchedule()">✦ إنشاء المسار الآن</button>
-  </div>
-</div>
-```
-
-  </div>
-</div>
-
-<!-- PAGE: SCHEDULE -->
-
-<div id="pageSchedule" class="page">
-  <div class="today-hero">
-    <div class="today-date" id="todayDateStr"></div>
-    <div class="today-title" id="todayTitle">جاري التحميل...</div>
-    <div class="today-sessions" id="todayTasks">
-      <div style="color:rgba(255,255,255,0.4);font-size:0.85em;">لا توجد جلسات اليوم 🌙</div>
-    </div>
-  </div>
-
-  <div class="stats-row" id="statsDashboard"></div>
-
-  <div class="section-header">
-    <div class="section-title">📅 خطة الأسبوع</div>
-    <button class="btn btn-ghost btn-sm" onclick="confirmRegenerate()"><i class="ri-refresh-line"></i> إعادة توليد</button>
-  </div>
-  <div id="weekSchedule" class="week-cols"></div>
-
-  <div class="progress-section">
-    <div class="section-header" style="margin-top:24px;">
-      <div class="section-title">📊 تقدم المواد</div>
-    </div>
-    <div id="progressGrid" class="progress-grid"></div>
-  </div>
-</div>
-
-<!-- PAGE: ROOMS -->
-
-<div id="pageRooms" class="page">
-  <div class="rooms-hero">
-    <h2>غرف الالتزام الصامت 🤐</h2>
-    <p>ادرس مع الآخرين لمضاعفة التركيز. بمجرد دخولك الغرفة يبدأ مؤقت بومودورو الجماعي تلقائياً.</p>
-    <button class="btn" style="background:white;color:var(--teal);font-weight:700;" onclick="toggleCreateRoom()">
-      <i class="ri-add-line"></i> فتح جلسة دراسة
-    </button>
-  </div>
-
-  <div class="room-create-panel hidden" id="createRoomForm">
-    <div class="room-create-header">
-      <h3>إعداد غرفة جديدة</h3>
-      <button class="btn-delete" onclick="toggleCreateRoom()">إلغاء</button>
-    </div>
-    <div class="form-row cols-2">
-      <div class="field">
-        <label>موضوع الدراسة</label>
-        <input type="text" id="roomTopic" placeholder="مثال: حل مسائل تفاضل وتكامل">
-      </div>
-      <div class="field">
-        <label>مدة الجلسة (دقيقة)</label>
-        <select id="roomDuration">
-          <option value="25" selected>25 دقيقة (بومودورو)</option>
-          <option value="45">45 دقيقة</option>
-          <option value="60">60 دقيقة</option>
-          <option value="90">90 دقيقة</option>
-        </select>
-      </div>
-    </div>
-    <button class="btn btn-teal btn-full" onclick="publishRoom()">
-      <i class="ri-broadcast-line"></i> نشر الغرفة الآن
-    </button>
-  </div>
-
-  <div class="section-header">
-    <div class="section-title">الغرف المفتوحة</div>
-    <div id="activeRoomsCount" class="tag tag-teal">جاري التحميل...</div>
-  </div>
-  <div class="rooms-grid" id="roomsContainer">
-    <div class="empty-box"><div class="empty-box-icon">📚</div>لا توجد غرف مفتوحة حالياً<br><small style="margin-top:8px;display:block;">كن أول من يبدأ جلسة تركيز!</small></div>
-  </div>
-</div>
-
-<!-- Study Timer Overlay -->
-
-<div id="studyTimerOverlay">
-  <div class="timer-phase" id="timerPhase">جلسة تركيز</div>
-  <div class="timer-label">مؤقت بومودورو</div>
-  <div class="timer-topic" id="activeRoomTopic">اسم المادة</div>
-  <div class="timer-clock" id="timerDisplay">25:00</div>
-  <div class="timer-members" id="memberCountDisplay">👥 1 يدرسون معك الآن</div>
-  <div class="timer-progress-wrap">
-    <div class="timer-progress-fill" id="timerProgress" style="width:100%"></div>
-  </div>
-  <button class="btn btn-ghost" onclick="leaveRoom()" style="color:white;border-color:rgba(255,255,255,0.25);">
-    <i class="ri-door-open-line"></i> إنهاء الجلسة والمغادرة
-  </button>
-</div>
-
-<!-- PAGE: ARENA -->
-
-<div id="pageArena" class="page">
-  <div class="page-header">
-    <div>
-      <div class="page-eyebrow">⚔️ ساحة التحدي</div>
-      <div class="page-title">تحدَّ وتقدَّم</div>
-    </div>
-  </div>
-
-  <div class="xp-bar-card">
-    <div class="xp-level-badge">
-      <div class="lvl-num" id="xpLevelNum">1</div>
-      <div class="lvl-lbl">مستوى</div>
-    </div>
-    <div class="xp-bar-info">
-      <div class="xp-bar-top">
-        <div class="xp-bar-name" id="xpBarName">...</div>
-        <div class="xp-bar-count" id="xpBarCount">0 / 100 XP</div>
-      </div>
-      <div class="progress-track"><div class="progress-fill" id="xpFillBar" style="width:0%"></div></div>
-    </div>
-  </div>
-
-  <div class="arena-layout">
-    <div class="duel-panel">
-      <h3>تحدي مباشر ⚔️</h3>
-      <p>ابحث عن خصم وتبادلا الأسئلة. من يجيب أكثر يربح XP ويتصدر القائمة!</p>
-      <button class="btn btn-gold btn-full" id="findMatchBtn" onclick="findMatch()">
-        <i class="ri-search-line"></i> البحث عن منافس
-      </button>
-      <div id="duelStatusMsg" style="margin-top:12px;font-size:0.82em;color:rgba(255,255,255,0.45);text-align:center;min-height:20px;"></div>
-    </div>
-    <div class="leaderboard-panel">
-      <h3>🏆 لوحة المتصدرين</h3>
-      <div id="leaderboardList">
-        <div class="empty-box" style="padding:20px"><div class="empty-box-icon">🏅</div>لا يوجد بيانات بعد</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Duel Overlay -->
-
-<div id="duelOverlay">
-  <button class="duel-close-btn" onclick="cancelDuel()"><i class="ri-close-line"></i> إلغاء</button>
-
-  <div id="opponentFinder">
-    <div style="font-size:3em;margin-bottom:14px;">🔍</div>
-    <div style="font-family:'Noto Kufi Arabic';font-size:1.4em;font-weight:900;color:var(--gold);margin-bottom:8px;">جاري البحث عن منافس...</div>
-    <div style="color:rgba(255,255,255,0.45);font-size:0.88em;">سيتم إشعارك فور إيجاد خصم</div>
-    <div class="auth-loading" style="margin-top:20px;border-top-color:var(--gold);width:28px;height:28px;border-width:3px;"></div>
-  </div>
-
-  <div id="duelContent" style="display:none;width:100%;max-width:500px;">
-    <div style="font-size:0.72em;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--rose);margin-bottom:14px;">⚔️ تحدي مباشر</div>
-
-```
-<div style="display:flex;justify-content:space-around;align-items:center;margin-bottom:26px;">
-  <div style="text-align:center;">
-    <div style="font-size:0.78em;opacity:0.6;margin-bottom:4px;">أنت</div>
-    <div id="myLiveScore" style="font-family:'Noto Kufi Arabic';font-size:2.8em;font-weight:900;color:var(--gold);">0</div>
-  </div>
-  <div style="font-size:1.5em;opacity:0.25;font-family:'Noto Kufi Arabic';">VS</div>
-  <div style="text-align:center;">
-    <div id="oppName" style="font-size:0.78em;opacity:0.6;margin-bottom:4px;">الخصم</div>
-    <div id="oppLiveScore" style="font-family:'Noto Kufi Arabic';font-size:2.8em;font-weight:900;color:var(--gold);">0</div>
-  </div>
-</div>
-
-<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:18px;padding:24px;">
-  <div id="duelWaitStatus" style="color:var(--gold);font-weight:700;font-size:1em;margin-bottom:16px;min-height:24px;"></div>
-
-  <div id="questionCreator" style="display:none;">
-    <label style="font-size:0.8em;color:rgba(255,255,255,0.5);display:block;margin-bottom:8px;">اكتب سؤالاً لخصمك:</label>
-    <textarea id="myTypedQuestion" style="width:100%;min-height:90px;background:rgba(0,0,0,0.3);color:white;border:1.5px solid var(--gold);padding:12px;border-radius:12px;font-family:'IBM Plex Sans Arabic';font-size:0.9em;resize:none;" placeholder="سؤالك هنا..."></textarea>
-    <button class="btn btn-gold btn-full" style="margin-top:12px" onclick="sendQuestionToOpponent()">إرسال السؤال 💬</button>
-  </div>
-
-  <div id="answerReceiver" style="display:none;">
-    <div style="font-size:0.78em;color:var(--gold);margin-bottom:10px;">السؤال:</div>
-    <div id="receivedQuestion" style="font-size:1.1em;margin-bottom:18px;line-height:1.6;font-weight:600;"></div>
-    <input type="text" id="myTypedAnswer" style="width:100%;background:rgba(0,0,0,0.3);color:white;border:1.5px solid var(--teal);padding:12px;border-radius:12px;font-family:'IBM Plex Sans Arabic';font-size:0.92em;" placeholder="إجابتك هنا...">
-    <button class="btn btn-teal btn-full" style="margin-top:12px" onclick="sendAnswerToOpponent()">إرسال الإجابة ✅</button>
-  </div>
-
-  <div id="judgePanel" style="display:none;">
-    <div style="font-size:0.78em;opacity:0.65;margin-bottom:8px;">إجابة خصمك:</div>
-    <div id="opponentAnswerText" style="font-size:1.05em;padding:14px;background:rgba(255,255,255,0.08);color:white;border-radius:12px;margin-bottom:18px;line-height:1.55;"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <button class="btn btn-teal" onclick="voteResult(true)">✅ صحيحة (+10 XP)</button>
-      <button class="btn btn-rose" onclick="voteResult(false)">❌ خاطئة</button>
-    </div>
-  </div>
-
-  <div id="duelResultPanel" style="display:none;text-align:center;">
-    <div style="font-size:3em;margin-bottom:12px;" id="duelResultEmoji">🏆</div>
-    <div style="font-family:'Noto Kufi Arabic';font-size:1.5em;font-weight:900;color:var(--gold);margin-bottom:8px;" id="duelResultText">انتهت المباراة!</div>
-    <div style="color:rgba(255,255,255,0.5);font-size:0.85em;margin-bottom:20px;" id="duelResultSub"></div>
-    <button class="btn btn-gold" onclick="cancelDuel()">العودة للساحة</button>
-  </div>
-</div>
-```
-
-  </div>
-</div>
-
-<!-- PAGE: MIZAN -->
-
-<div id="pageMizan" class="page">
-  <div class="mizan-hero">
-    <div class="page-eyebrow" style="color:var(--gold);position:relative;z-index:1;">نظام الـ LMS الأول في العراق 🇮🇶</div>
-    <h2>ادرس بذكاء، لا بجهد! 🧠🛡️</h2>
-    <p>منصة الميزان ليست مجرد محاضرات، بل هي "المدير الشخصي" لرحلتك نحو المعدل والوزاري.</p>
-    <button class="btn btn-gold" style="position:relative;z-index:1;" onclick="toast('قريباً إن شاء الله! 🚀','success')">
-      <i class="ri-notification-line"></i> أشعرني عند الإطلاق
-    </button>
-  </div>
-
-  <div class="mizan-features">
-    <div class="mizan-feat">
-      <div class="mizan-feat-ico">📑</div>
-      <div><h4>الجدول الإلكتروني الذكي</h4><p>نظام يتابع واجباتك، يذكرك بكل خطوة، ويراقب حضورك الإلكتروني لحظة بلحظة.</p></div>
-    </div>
-    <div class="mizan-feat">
-      <div class="mizan-feat-ico">👨‍👩‍👦</div>
-      <div><h4>تقرير ولي الأمر اليومي</h4><p>لأول مرة الأهل معك خطوة بخطوة بتقارير يومية عن أدائك وانضباطك.</p></div>
-    </div>
-    <div class="mizan-feat">
-      <div class="mizan-feat-ico">📝</div>
-      <div><h4>محاكاة الامتحانات الوزارية</h4><p>نظام امتحانات يحاكي الواقع مع تصحيح دقيق يخليك تعرف أخطاءك قبل القاعة.</p></div>
-    </div>
-    <div class="mizan-feat">
-      <div class="mizan-feat-ico">📊</div>
-      <div><h4>بوابة التطور (الرادار)</h4><p>رادار ذكي يحلل مستواك بالأرقام ويگلك وين تقدمت ووين لازم تشد حيلك.</p></div>
-    </div>
-  </div>
-
-  <div class="mizan-warning">
-    <strong>⚠️ تنبيه مهم:</strong> الميزان منصة إدارة وتنظيم دراسي (LMS) متكاملة لضمان انضباطك، وليست منصة لبيع المحاضرات المسجلة. نحن نعطيك "الخريطة والالتزام"، وأنت عليك السعي.
-  </div>
-
-  <div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.82em;">
-    © 2026 منصة الميزان التعليمية — جميع الحقوق محفوظة
-  </div>
-</div>
-
-<!-- TOAST -->
+<!-- ══════════════════════════════ TOAST ══════════════════════════════ -->
 
 <div id="toast"></div>
 
-<!-- Firebase -->
+<!-- ══════════════════════════════ AUTH OVERLAY ══════════════════════════════ -->
+
+<div id="authOverlay">
+  <div class="auth-wrap">
+    <div class="auth-logo-area">
+      <div class="auth-logo-main" id="authLogoMain">مـسـار</div>
+      <span class="auth-logo-sub" id="authLogoSub">منصة التعليم الذكي</span>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" onclick="setAuthMode('login')" id="authTabLogin">دخول</button>
+        <button class="auth-tab-btn" onclick="setAuthMode('signup')" id="authTabSignup">تسجيل جديد</button>
+      </div>
+      <div class="auth-field">
+        <i class="ri-mail-line auth-field-icon"></i>
+        <input class="auth-input" type="email" id="userEmail" placeholder="البريد الإلكتروني">
+      </div>
+      <div class="auth-field">
+        <i class="ri-lock-line auth-field-icon"></i>
+        <input class="auth-input" type="password" id="userPass" placeholder="كلمة المرور">
+      </div>
+      <div class="auth-field" id="confirmField" style="display:none">
+        <i class="ri-lock-2-line auth-field-icon"></i>
+        <input class="auth-input" type="password" id="userConfirm" placeholder="تأكيد كلمة المرور">
+      </div>
+      <div class="auth-forgot" onclick="forgotPassword()" id="authForgot">نسيت كلمة المرور؟</div>
+      <button class="btn-auth" onclick="handleAuth()" id="authMainBtn">دخول للمنصة</button>
+      <button class="btn-google" onclick="loginWithGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
+        <span id="googleBtnText">الدخول بـ Google</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ FOCUS OVERLAY ══════════════════════════════ -->
+
+<div id="focusOverlay">
+  <div style="margin-bottom:16px; font-size:2.5em">🎯</div>
+  <div class="focus-overlay-timer" id="focusOverlayTime">25:00</div>
+  <div style="color:var(--muted); margin-top:12px; font-size:0.9em" id="focusOverlayPhase">وضع التركيز</div>
+  <button class="btn btn-secondary" style="margin-top:32px" onclick="exitFocusOverlay()">خروج من وضع التركيز</button>
+</div>
+
+<!-- ══════════════════════════════ BOTTOM NAV ══════════════════════════════ -->
+
+<nav id="bottomNav" style="display:none">
+  <div class="nav-item active" onclick="goPage('pageSetup')" data-page="pageSetup">
+    <i class="ri-settings-4-fill"></i><span>الإعداد</span>
+  </div>
+  <div class="nav-item" onclick="goPage('pageSchedule')" data-page="pageSchedule">
+    <i class="ri-calendar-check-fill"></i><span>الجدول</span>
+  </div>
+  <div class="nav-item" onclick="goPage('pageGroup')" data-page="pageGroup">
+    <i class="ri-team-fill"></i><span>المجموعة</span>
+    <div class="notif-dot" id="groupNotif" style="display:none"></div>
+  </div>
+  <div class="nav-item" onclick="goPage('pageArena')" data-page="pageArena">
+    <i class="ri-sword-fill"></i><span>التحدي</span>
+  </div>
+  <div class="nav-item" onclick="goPage('pageMizan')" data-page="pageMizan">
+    <i class="ri-shield-star-fill"></i><span>الميزان</span>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════ PAGE: SETUP ══════════════════════════════ -->
+
+<div id="pageSetup" class="page active">
+  <div class="page-header">
+    <div class="page-header-icon"><i class="ri-brain-fill"></i></div>
+    <div>
+      <div class="page-title" id="setupTitle">تخصيص الخطة الذكية</div>
+      <div class="page-subtitle" id="setupSub">أخبرنا عنك لنبني جدولك المثالي</div>
+    </div>
+  </div>
+
+  <div class="card card-glow" style="margin-bottom:16px">
+    <div class="field">
+      <label class="field-label">الاسم الكامل</label>
+      <input type="text" id="studentName" class="field-input" placeholder="اسمك هنا...">
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label">المرحلة الدراسية</label>
+        <select id="studyLevel" class="field-input">
+          <option value="6">السادس الإعدادي</option>
+          <option value="3">الثالث متوسط</option>
+          <option value="univ">جامعة</option>
+          <option value="other">أخرى</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">وقت ذروة النشاط</label>
+        <select id="peakTime" class="field-input">
+          <option value="morning">صباحاً / فجراً</option>
+          <option value="evening">مساءً</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">هدف الساعات اليومية</label>
+      <select id="dailyGoal" class="field-input">
+        <option value="2">ساعتان</option>
+        <option value="4" selected>4 ساعات</option>
+        <option value="6">6 ساعات</option>
+        <option value="8">8 ساعات أو أكثر</option>
+      </select>
+    </div>
+    <button class="btn btn-primary btn-w100" onclick="saveProfile()">
+      <i class="ri-save-line"></i> حفظ البيانات
+    </button>
+  </div>
+
+  <div class="sec-header">
+    <span class="sec-title">📚 المواد الدراسية</span>
+    <span class="badge badge-gold" id="subjCount">0 مواد</span>
+  </div>
+
+  <div class="card" style="border-style:dashed; margin-bottom:14px">
+    <div class="grid-2" style="margin-bottom:10px">
+      <input type="text" id="subjName" class="field-input" placeholder="اسم المادة...">
+      <select id="subjDiff" class="field-input">
+        <option value="3">🔴 صعبة</option>
+        <option value="2" selected>🟡 متوسطة</option>
+        <option value="1">🟢 سهلة</option>
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:10px">
+      <input type="number" id="subjChapters" class="field-input" placeholder="عدد الفصول (اختياري)" min="1" max="50">
+    </div>
+    <button class="btn btn-teal-solid btn-w100" onclick="addSubject()">
+      <i class="ri-add-line"></i> إضافة للمسار
+    </button>
+  </div>
+
+  <div id="subjectsList" style="margin-bottom:20px; display:flex; flex-wrap:wrap;"></div>
+
+  <button class="btn btn-primary btn-w100" style="font-size:1.1em; padding:16px" onclick="generateAISchedule()">
+    <i class="ri-sparkling-2-fill"></i> توليد الجدول بالذكاء الاصطناعي
+  </button>
+</div>
+
+<!-- ══════════════════════════════ PAGE: SCHEDULE ══════════════════════════════ -->
+
+<div id="pageSchedule" class="page">
+  <div class="hero-card">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start">
+      <div>
+        <div style="font-size:0.8em; color:var(--muted); font-weight:700; letter-spacing:1px; margin-bottom:6px">الجدول الذكي</div>
+        <h2 id="welcomeMsg" style="font-family:var(--font-display); color:var(--gold); font-size:1.4em; line-height:1.3">
+          بانتظار بناء جدولك...
+        </h2>
+        <p id="progressStat" style="color:var(--muted); font-size:0.83em; margin-top:6px">
+          أكمل إعداد بياناتك أولاً
+        </p>
+      </div>
+      <div class="streak-badge">
+        <span class="streak-fire">🔥</span>
+        <span class="streak-num" id="streakNum">0</span>
+        <span class="streak-lbl">يوم</span>
+      </div>
+    </div>
+    <div class="prog-wrap" style="margin-top:16px">
+      <div class="prog-meta">
+        <span>إنجاز الأسبوع</span>
+        <span id="todayPct">0%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="todayProg" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-num" id="totalHours">0</div><div class="stat-lbl">ساعة دراسة</div></div>
+    <div class="stat-card"><div class="stat-num" id="completedTasks">0</div><div class="stat-lbl">مهمة منجزة</div></div>
+    <div class="stat-card"><div class="stat-num" id="rankVal">–</div><div class="stat-lbl">الترتيب</div></div>
+    <div class="stat-card"><div class="stat-num" id="levelVal">1</div><div class="stat-lbl">المستوى</div></div>
+  </div>
+
+  <div id="scheduleContainer" class="schedule-grid"></div>
+</div>
+
+<!-- ══════════════════════════════ PAGE: GROUP ══════════════════════════════ -->
+
+<div id="pageGroup" class="page">
+  <div class="page-header">
+    <div class="page-header-icon" style="background:rgba(124,58,237,0.15); border-color:rgba(124,58,237,0.3); color:#A78BFA">
+      <i class="ri-team-fill"></i>
+    </div>
+    <div>
+      <div class="page-title">الدراسة الجماعية</div>
+      <div class="page-subtitle">ادرس مع أصدقائك في وقت واحد</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="groupTab('myRoom')" id="tabMyRoom">غرفتي</button>
+    <button class="tab-btn" onclick="groupTab('joinRoom')" id="tabJoinRoom">الانضمام</button>
+    <button class="tab-btn" onclick="groupTab('leaderboard')" id="tabLeader">المتصدرون</button>
+  </div>
+
+  <!-- MY ROOM TAB -->
+
+  <div id="groupTabMyRoom">
+    <div class="card card-glow" style="margin-bottom:14px">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px">
+        <div>
+          <span style="font-weight:800; font-size:1em" id="myRoomName">غرفتي الدراسية</span>
+          <span class="badge badge-live" style="margin-inline-start:8px">🔴 مباشر</span>
+        </div>
+        <div style="display:flex; gap:8px">
+          <button class="btn btn-sm btn-secondary btn-icon" onclick="copyCode()" title="نسخ الكود"><i class="ri-file-copy-line"></i></button>
+          <button class="btn btn-sm btn-secondary btn-icon" onclick="shareRoom()" title="مشاركة"><i class="ri-share-line"></i></button>
+        </div>
+      </div>
+
+```
+  <div class="invite-code-box" id="myInviteCode" onclick="copyCode()">MAS-XXXX</div>
+  <div style="text-align:center; font-size:11px; color:var(--muted); margin-top:6px; margin-bottom:16px">
+    اضغط لنسخ كود الدعوة
+  </div>
+
+  <!-- Session Timer -->
+  <div class="session-timer-display" id="sessionTimer">00:00:00</div>
+  <div class="grid-2" style="margin-top:10px; gap:10px">
+    <button class="btn btn-primary" onclick="toggleSession()" id="sessionBtn">
+      <i class="ri-play-fill"></i> بدء الجلسة
+    </button>
+    <button class="btn btn-danger" onclick="endSession()">
+      <i class="ri-stop-fill"></i> إنهاء
+    </button>
+  </div>
+</div>
+
+<!-- Pomodoro -->
+<div class="card" style="margin-bottom:14px">
+  <div class="sec-header">
+    <span class="sec-title">⏱ بومودورو الجماعي</span>
+    <span class="badge badge-purple" id="pomPhaseBadge">تركيز</span>
+  </div>
+  <div class="pom-container">
+    <div class="pom-ring">
+      <svg width="110" height="110" viewBox="0 0 110 110">
+        <circle class="pom-bg" cx="55" cy="55" r="46"/>
+        <circle class="pom-track" cx="55" cy="55" r="46"/>
+        <circle class="pom-prog pom-focus-prog" cx="55" cy="55" r="46"
+          id="pomRing" stroke-dasharray="289.03" stroke-dashoffset="0"/>
+      </svg>
+      <div class="pom-text">
+        <span class="pom-time" id="pomTime">25:00</span>
+        <span class="pom-phase" id="pomLabel">تركيز</span>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:14px">
+      <button class="btn btn-primary btn-sm" onclick="togglePomodoro()" id="pomBtn">▶ بدء</button>
+      <button class="btn btn-secondary btn-sm" onclick="resetPomodoro()">↺ إعادة</button>
+    </div>
+  </div>
+</div>
+
+<!-- Focus Mode Toggle -->
+<div class="focus-toggle-row" onclick="toggleFocusMode()" id="focusModeBar" style="margin-bottom:14px">
+  <i class="ri-focus-3-line" style="color:#A78BFA; font-size:20px"></i>
+  <span style="flex:1; font-size:0.9em; font-weight:700">وضع التركيز الصامت</span>
+  <div class="toggle-switch" id="focusToggle"><div class="toggle-ball"></div></div>
+</div>
+
+<!-- Members -->
+<div class="card" style="margin-bottom:14px">
+  <div class="sec-header">
+    <span class="sec-title">👥 الأعضاء</span>
+    <span style="font-size:12px; color:var(--muted)" id="membersCount">0 / 8</span>
+  </div>
+  <div id="membersList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+</div>
+
+<!-- Chat -->
+<div class="card">
+  <div class="sec-header">
+    <span class="sec-title">💬 المحادثة</span>
+    <i class="ri-message-3-line" style="color:var(--muted)"></i>
+  </div>
+  <div class="chat-container" id="groupChat">
+    <div class="empty-state" style="padding:20px">
+      <div class="empty-state-icon">💬</div>
+      <div class="empty-state-text">لا توجد رسائل بعد</div>
+    </div>
+  </div>
+  <div class="chat-input-row" id="chatInputRow">
+    <input type="text" class="chat-input" id="chatInput" placeholder="اكتب رسالة..."
+      onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send-btn" onclick="sendChat()"><i class="ri-send-plane-fill"></i></button>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- JOIN ROOM TAB -->
+
+  <div id="groupTabJoinRoom" style="display:none">
+    <div class="card" style="margin-bottom:14px">
+      <h4 style="margin-bottom:14px; font-family:var(--font-display)">الانضمام بكود الدعوة</h4>
+      <input type="text" id="joinCode" class="field-input"
+        placeholder="MAS-XXXX" style="text-align:center; font-family:var(--font-mono); font-size:1.3em; letter-spacing:4px; margin-bottom:12px">
+      <button class="btn btn-primary btn-w100" onclick="joinRoom()">
+        <i class="ri-door-open-fill"></i> انضمام للغرفة
+      </button>
+    </div>
+    <div class="card">
+      <div class="sec-header">
+        <span class="sec-title">🌐 غرف عامة مفتوحة</span>
+        <button class="btn btn-sm btn-secondary" onclick="renderPublicRooms()"><i class="ri-refresh-line"></i></button>
+      </div>
+      <div id="publicRoomsList"><div class="empty-state"><div class="loading-spin"></div></div></div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD TAB -->
+
+  <div id="groupTabLeaderboard" style="display:none">
+    <div class="card">
+      <div class="sec-header">
+        <span class="sec-title">🏆 المتصدرون هذا الأسبوع</span>
+      </div>
+      <div id="leaderboardList"><div class="empty-state"><div class="loading-spin"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ PAGE: ARENA ══════════════════════════════ -->
+
+<div id="pageArena" class="page">
+  <div class="page-header">
+    <div class="page-header-icon" style="background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.25); color:#FCA5A5">
+      <i class="ri-sword-fill"></i>
+    </div>
+    <div>
+      <div class="page-title">ساحة التحدي</div>
+      <div class="page-subtitle" id="arenaRatingDisplay">التقييم: 1000</div>
+    </div>
+  </div>
+
+  <!-- Lobby -->
+
+  <div id="arenaLobby">
+    <div class="card" style="text-align:center; padding:32px; margin-bottom:14px">
+      <div style="font-size:3.5em; margin-bottom:12px">⚔️</div>
+      <h3 style="font-family:var(--font-display); margin-bottom:8px">هل أنت مستعد للمنافسة؟</h3>
+      <p style="color:var(--muted); font-size:0.87em; margin-bottom:24px">تنافس مع زملائك في اختبارات سريعة</p>
+      <button class="btn btn-primary btn-w100" style="margin-bottom:10px" onclick="findArenaMatch()">
+        <i class="ri-search-line"></i> البحث عن منافس حقيقي
+      </button>
+      <button class="btn btn-purple-solid btn-w100" onclick="startSoloChallenge()">
+        <i class="ri-robot-fill"></i> تحدي ضد الذكاء الاصطناعي
+      </button>
+    </div>
+    <div class="grid-2">
+      <div class="stat-card"><div class="stat-num" id="arenaWins">0</div><div class="stat-lbl">انتصارات</div></div>
+      <div class="stat-card"><div class="stat-num" id="arenaRating">1000</div><div class="stat-lbl">التقييم ELO</div></div>
+    </div>
+  </div>
+
+  <!-- Game -->
+
+  <div id="arenaGame" style="display:none">
+    <div class="arena-header">
+      <div class="arena-player-card">
+        <div class="arena-avatar">🧑</div>
+        <div class="arena-name" id="player1Name">أنت</div>
+        <div class="arena-score" style="color:var(--gold)" id="player1Score">0</div>
+      </div>
+      <div class="arena-vs-badge">VS</div>
+      <div class="arena-player-card">
+        <div class="arena-avatar">🤖</div>
+        <div class="arena-name" id="player2Name">منافس</div>
+        <div class="arena-score" style="color:var(--rose)" id="player2Score">0</div>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-num-badge">السؤال <span id="qNum">1</span> / 5</span>
+        <span class="q-timer-badge" id="qTimerBadge">10s</span>
+      </div>
+      <div class="q-text" id="qText"></div>
+      <div id="qOptions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ PAGE: MIZAN ══════════════════════════════ -->
+
+<div id="pageMizan" class="page">
+  <div class="page-header">
+    <div class="page-header-icon" style="background:rgba(212,175,55,0.12); border-color:rgba(212,175,55,0.3); color:var(--gold)">
+      <i class="ri-shield-star-fill"></i>
+    </div>
+    <div>
+      <div class="page-title">رادار الميزان</div>
+      <div class="page-subtitle">تتبع أدائك وتقدمك الدراسي الحقيقي</div>
+    </div>
+  </div>
+
+  <div class="mizan-radar">
+    <div class="mizan-stat">
+      <span class="mizan-icon">🎯</span>
+      <span class="mizan-val" id="mizanCommit">0%</span>
+      <span class="mizan-lbl">الالتزام</span>
+    </div>
+    <div class="mizan-stat">
+      <span class="mizan-icon">⏱</span>
+      <span class="mizan-val" id="mizanFocus">0h</span>
+      <span class="mizan-lbl">إجمالي التركيز</span>
+    </div>
+    <div class="mizan-stat">
+      <span class="mizan-icon">🔥</span>
+      <span class="mizan-val" id="mizanStreak">0</span>
+      <span class="mizan-lbl">يوم متواصل</span>
+    </div>
+    <div class="mizan-stat">
+      <span class="mizan-icon">🧑‍🤝‍🧑</span>
+      <span class="mizan-val" id="mizanGroups">0</span>
+      <span class="mizan-lbl">جلسة جماعية</span>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="sec-header">
+      <span class="sec-title">📈 تقدم المواد</span>
+    </div>
+    <div id="subjectProgress"></div>
+  </div>
+
+  <div class="guardian-card">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+      <div style="font-size:1.8em">🛡️</div>
+      <div>
+        <div style="font-weight:800; font-size:1em">حماية المسار</div>
+        <div style="font-size:0.8em; color:#A78BFA">نظام الميزان LMS</div>
+      </div>
+    </div>
+    <p style="font-size:0.85em; color:var(--muted); line-height:1.7; margin-bottom:14px">
+      يرسل نظام الميزان تقارير يومية تلقائية تتضمن نسبة الإنجاز، وقت البدء الفعلي، ونتائج التحديات.
+    </p>
+    <div>
+      <div class="prog-meta">
+        <span>هدف الأسبوع</span>
+        <span id="weeklyGoalPct">0%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="weeklyGoalProg" style="width:0%"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ FIREBASE ══════════════════════════════ -->
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 
@@ -762,11 +1117,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-'use strict';
-
-// ============================================================
+// ══════════════════════════════════════════════════════════════════
 // FIREBASE INIT
-// ============================================================
+// ══════════════════════════════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyDeBAgXm6L3NPTitSuzkS37ZFoyy_UvMHk",
   authDomain: "masar-5db30.firebaseapp.com",
@@ -775,1140 +1128,999 @@ const firebaseConfig = {
   messagingSenderId: "909223400853",
   appId: "1:909223400853:web:a64c4e243de8c1dc15d29c"
 };
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// ============================================================
+// ══════════════════════════════════════════════════════════════════
 // STATE
-// ============================================================
+// ══════════════════════════════════════════════════════════════════
 let currentUser = null;
-let studentData = {
-  name:'', level:'', sleepHours:8, learningStyle:'flexible',
-  subjects:[], timeAvailability:{}, savedSchedule:[],
-  sessionDone:{}, xp:0, levelNum:1
-};
-let currentWizardStep = 1;
-let currentRoomId = null;
-let timerInterval = null;
-let timerTotal = 0;
-let timerRemaining = 0;
-let roomsListener = null;
-let currentMatchId = null;
-let matchListener = null;
-let waitingListener = null;
-
-const DAYS = ['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
-const COLORS = ['#C9A84C','#1A7A6E','#C45C5C','#7C5CBF','#4A9E8B','#BF8A4A','#6B7FBF'];
-
-// Time slots by preference
-const TIME_SLOTS = {
-  morning:   ['06:00','07:30','09:00','10:30'],
-  afternoon: ['14:00','15:30','17:00','18:30'],
-  evening:   ['20:00','21:30','23:00'],
-  flexible:  ['08:00','11:00','16:00','20:00']
-};
-
-// ============================================================
-// AUTH
-// ============================================================
 let authMode = 'login';
+let currentLang = 'ar';
+let userProfile = {
+  name:'', subjects:[], schedule:[], streak:0,
+  completedTasks:0, totalHours:0, arenaWins:0, arenaRating:1000,
+  mizanGroups:0, dailyGoal:4
+};
+let currentRoomId = null;
+let sessionRunning = false;
+let sessionSeconds = 0;
+let sessionInterval = null;
+let pomodoroRunning = false;
+let pomodoroSeconds = 25*60;
+let pomodoroPhase = 'focus';
+let pomInterv = null;
+let focusModeActive = false;
+const POM_FOCUS = 25*60, POM_BREAK = 5*60, TOTAL_CIRC = 289.03;
+let arenaMatchId = null;
+let arenaState = { qIndex:0, p1:0, p2:0, timer:null, qTimer:10, questions:[], isPlayer1:false };
+const forbiddenWords = ["واتس","تلي","انستا","تيليغرام","تيك توك"];
 
-function switchAuthTab(mode, el) {
+// ══════════════════════════════════════════════════════════════════
+// ARENA QUESTIONS BANK
+// ══════════════════════════════════════════════════════════════════
+const arenaQuestions = {
+  ar: [
+    { q:'ما هو رمز عنصر الذهب في الجدول الدوري؟', opts:['Au','Go','Gd','Ag'], ans:0 },
+    { q:'كم يساوي ناتج 15 × 12؟', opts:['180','170','160','190'], ans:0 },
+    { q:'ما عاصمة المملكة العربية السعودية؟', opts:['الرياض','جدة','مكة','الدمام'], ans:0 },
+    { q:'من كتب رواية "ألف شمس مشرقة"؟', opts:['خالد حسيني','نجيب محفوظ','غابرييل ماركيز','تولستوي'], ans:0 },
+    { q:'ما هي أكبر قارة في العالم؟', opts:['آسيا','أفريقيا','أمريكا الشمالية','أوروبا'], ans:0 },
+    { q:'كم يساوي الجذر التربيعي لـ 144؟', opts:['12','11','13','14'], ans:0 },
+    { q:'ما سرعة الضوء تقريباً؟', opts:['300,000 كم/ث','150,000 كم/ث','3,000 كم/ث','30,000 كم/ث'], ans:0 },
+    { q:'من هو أول رائد فضاء عربي؟', opts:['سلطان بن سلمان','محمد فارس','أحمد الزواوي','هزاع المنصوري'], ans:0 },
+    { q:'ما عدد أضلاع المسدس المنتظم؟', opts:['6','5','7','8'], ans:0 },
+    { q:'في أي عام اكتشف ألكسندر فلمنغ البنسلين؟', opts:['1928','1905','1945','1918'], ans:0 }
+  ],
+  en: [
+    { q:'What is the chemical symbol for Gold?', opts:['Au','Go','Gd','Ag'], ans:0 },
+    { q:'What is 15 × 12?', opts:['180','170','160','190'], ans:0 },
+    { q:'Capital of Saudi Arabia?', opts:['Riyadh','Jeddah','Mecca','Dammam'], ans:0 },
+    { q:'Who wrote "A Thousand Splendid Suns"?', opts:['Khaled Hosseini','Naguib Mahfouz','G.Marquez','Tolstoy'], ans:0 },
+    { q:'Largest continent?', opts:['Asia','Africa','N. America','Europe'], ans:0 },
+    { q:'Square root of 144?', opts:['12','11','13','14'], ans:0 },
+    { q:'Speed of light?', opts:['300,000 km/s','150,000 km/s','3,000 km/s','30,000 km/s'], ans:0 },
+    { q:'First Arab astronaut?', opts:['Sultan Al Saud','Mohammad Faris','Hazza Al Mansouri','Ahmad'], ans:0 },
+    { q:'Sides of a regular hexagon?', opts:['6','5','7','8'], ans:0 },
+    { q:'Year penicillin was discovered?', opts:['1928','1905','1945','1918'], ans:0 }
+  ]
+};
+
+// ══════════════════════════════════════════════════════════════════
+// I18N
+// ══════════════════════════════════════════════════════════════════
+function setLang(lang) {
+  currentLang = lang;
+  document.documentElement.setAttribute('lang', lang);
+  document.documentElement.setAttribute('dir', lang==='ar'?'rtl':'ltr');
+  document.documentElement.setAttribute('data-lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(b =>
+    b.classList.toggle('active', (lang==='ar'?b.textContent==='عربي':b.textContent==='EN'))
+  );
+  document.getElementById('appLang') && (document.getElementById('appLang').value = lang);
+  // Re-render dynamic content
+  if(userProfile.schedule?.length) renderSchedule();
+  renderSubjects();
+  updateMizan();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// AUTH SYSTEM
+// ══════════════════════════════════════════════════════════════════
+auth.onAuthStateChanged(user => {
+  if(user) {
+    currentUser = user;
+    document.getElementById('authOverlay').style.display = 'none';
+    document.getElementById('bottomNav').style.display = 'flex';
+    loadUserData(user.uid);
+    initGroupRoom();
+  } else {
+    document.getElementById('authOverlay').style.display = 'flex';
+    document.getElementById('bottomNav').style.display = 'none';
+  }
+});
+
+function setAuthMode(mode) {
   authMode = mode;
-  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('authBtnText').textContent = mode === 'login' ? 'تسجيل الدخول' : 'إنشاء الحساب';
-  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authTabLogin').classList.toggle('active', mode==='login');
+  document.getElementById('authTabSignup').classList.toggle('active', mode==='signup');
+  document.getElementById('confirmField').style.display = mode==='signup'?'block':'none';
+  document.getElementById('authForgot').style.display = mode==='login'?'block':'none';
+  document.getElementById('authMainBtn').textContent =
+    mode==='signup'?(currentLang==='ar'?'إنشاء حساب':'Create Account'):(currentLang==='ar'?'دخول للمنصة':'Enter Platform');
 }
 
 async function handleAuth() {
   const email = document.getElementById('userEmail').value.trim();
-  const pass  = document.getElementById('userPass').value;
-  const errEl = document.getElementById('authError');
-  const btn   = document.getElementById('authBtn');
-  errEl.style.display = 'none';
-
-  if (!email || pass.length < 6) {
-    errEl.textContent = '⚠️ البريد الإلكتروني مطلوب وكلمة السر يجب أن تكون 6 رموز على الأقل';
-    errEl.style.display = 'block'; return;
+  const pass = document.getElementById('userPass').value;
+  if(!email || !pass) return showToast('⚠️ أدخل بياناتك');
+  if(authMode==='signup') {
+    const confirm = document.getElementById('userConfirm').value;
+    if(pass !== confirm) return showToast('❌ كلمتا المرور غير متطابقتين');
+    if(pass.length < 6) return showToast('❌ كلمة المرور قصيرة جداً');
   }
-
-  btn.innerHTML = '<span class="auth-loading"></span>';
-  btn.disabled = true;
-
   try {
-    if (authMode === 'signup') {
-      await auth.createUserWithEmailAndPassword(email, pass);
-      toast('✅ تم إنشاء حسابك بنجاح، مرحباً بك!', 'success');
+    if(authMode==='signup') {
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      await cred.user.sendEmailVerification();
+      showToast('📧 تم الإنشاء! تحقق من بريدك');
     } else {
       await auth.signInWithEmailAndPassword(email, pass);
-      toast('👋 مرحباً بعودتك!', 'success');
     }
   } catch(e) {
     const msgs = {
-      'auth/user-not-found': 'لا يوجد حساب بهذا البريد',
-      'auth/wrong-password': 'كلمة السر غير صحيحة',
-      'auth/email-already-in-use': 'هذا البريد مسجل مسبقاً',
-      'auth/invalid-email': 'البريد الإلكتروني غير صحيح',
-      'auth/too-many-requests': 'محاولات كثيرة، انتظر قليلاً'
+      'auth/user-not-found':'المستخدم غير موجود',
+      'auth/wrong-password':'كلمة المرور خاطئة',
+      'auth/email-already-in-use':'البريد مستخدم بالفعل',
+      'auth/invalid-email':'البريد غير صحيح',
+      'auth/weak-password':'كلمة المرور ضعيفة'
     };
-    errEl.textContent = msgs[e.code] || ('خطأ: ' + e.message);
-    errEl.style.display = 'block';
-  } finally {
-    btn.innerHTML = '<span id="authBtnText">' + (authMode === 'login' ? 'تسجيل الدخول' : 'إنشاء الحساب') + '</span>';
-    btn.disabled = false;
+    showToast('❌ ' + (msgs[e.code] || e.message));
   }
 }
 
-function signOut() {
-  if (!confirm('هل تريد تسجيل الخروج؟')) return;
-  if (roomsListener) roomsListener();
-  if (matchListener) matchListener();
-  if (waitingListener) waitingListener();
-  auth.signOut();
-}
-
-auth.onAuthStateChanged(user => {
-  if (user) {
-    currentUser = user;
-    document.getElementById('authOverlay').style.display = 'none';
-    document.getElementById('bottomNav').classList.remove('hidden');
-    loadSavedData();
-    listenToRooms();
-    loadLeaderboard();
-  } else {
-    currentUser = null;
-    document.getElementById('authOverlay').style.display = 'flex';
-    document.getElementById('bottomNav').classList.add('hidden');
-    if (roomsListener) { roomsListener(); roomsListener = null; }
-  }
-});
-
-// Handle Enter key in auth
-document.getElementById('userPass').addEventListener('keydown', e => { if(e.key==='Enter') handleAuth(); });
-document.getElementById('userEmail').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('userPass').focus(); });
-
-// ============================================================
-// NAVIGATION
-// ============================================================
-function goPage(pageId) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => {
-    n.classList.toggle('active', n.dataset.page === pageId);
-  });
-  if (pageId === 'pageSchedule') renderFinalSchedule();
-  if (pageId === 'pageArena') renderXpBar();
-  if (pageId === 'pageMizan') animateMizanFeatures();
-}
-
-// ============================================================
-// WIZARD
-// ============================================================
-function updateWizard() {
-  document.querySelectorAll('.step-pane').forEach(p => p.classList.remove('active'));
-  document.querySelector(`[data-spane="${currentWizardStep}"]`).classList.add('active');
-  document.querySelectorAll('.wizard-step-tab').forEach((t, i) => {
-    t.classList.toggle('active', i+1 === currentWizardStep);
-    t.classList.toggle('done', i+1 < currentWizardStep);
-  });
-  document.getElementById('prevBtn').style.display = currentWizardStep > 1 ? 'inline-flex' : 'none';
-  const isLast = currentWizardStep === 4;
-  document.getElementById('nextBtn').classList.toggle('hidden', isLast);
-  document.getElementById('generateBtn').classList.toggle('hidden', !isLast);
-}
-
-function nextStep() {
-  if (currentWizardStep === 1) {
-    const name  = document.getElementById('studentName').value.trim();
-    const level = document.getElementById('studyLevel').value;
-    if (!name)  { toast('⚠️ أدخل اسمك أولاً', 'error'); return; }
-    if (!level) { toast('⚠️ اختر المرحلة الدراسية', 'error'); return; }
-    studentData.name  = name;
-    studentData.level = level;
-    studentData.sleepHours   = parseInt(document.getElementById('sleepHours').value);
-    studentData.learningStyle = document.getElementById('learningStyle').value;
-    document.getElementById('setupPageTitle').textContent = 'أهلاً ' + name;
-  }
-  if (currentWizardStep === 2) {
-    saveTimeAvailability();
-    const hasDays = Object.keys(studentData.timeAvailability).some(d => studentData.timeAvailability[d].enabled);
-    if (!hasDays) { toast('⚠️ اختر يوماً واحداً على الأقل', 'error'); return; }
-  }
-  if (currentWizardStep === 3 && studentData.subjects.length === 0) {
-    toast('⚠️ أضف مادة واحدة على الأقل', 'error'); return;
-  }
-  if (currentWizardStep < 4) { currentWizardStep++; updateWizard(); }
-}
-
-function prevStep() {
-  if (currentWizardStep > 1) { currentWizardStep--; updateWizard(); }
-}
-
-// ============================================================
-// TIME AVAILABILITY (STEP 2)
-// ============================================================
-function initTimeGrid() {
-  const container = document.getElementById('timeAvailability');
-  container.innerHTML = '';
-  const pref = studentData.learningStyle || 'flexible';
-  const slots = TIME_SLOTS[pref];
-  const defaultStart = slots[0];
-  const defaultEnd   = slots[slots.length > 1 ? 1 : 0];
-
-  DAYS.forEach(day => {
-    const saved = studentData.timeAvailability[day] || {};
-    const checked = saved.enabled ? 'checked' : '';
-    const disabled = !saved.enabled ? 'disabled' : '';
-    const row = document.createElement('div');
-    row.className = 'day-row' + (!saved.enabled ? ' disabled' : '');
-    row.id = 'dayrow_' + day;
-    row.innerHTML = `
-      <input type="checkbox" ${checked} onchange="toggleDayRow('${day}', this)">
-      <span style="font-weight:600;font-size:0.88em;">${day}</span>
-      <div class="field" style="margin:0;">
-        <input type="time" id="start_${day}" value="${saved.start || defaultStart}" ${disabled}>
-      </div>
-      <div class="field" style="margin:0;">
-        <input type="time" id="end_${day}" value="${saved.end || (pref==='flexible'?'22:00':'23:00')}" ${disabled}>
-      </div>
-    `;
-    container.appendChild(row);
-  });
-}
-
-function toggleDayRow(day, cb) {
-  const row = document.getElementById('dayrow_' + day);
-  const inputs = row.querySelectorAll('input[type="time"]');
-  if (cb.checked) {
-    row.classList.remove('disabled');
-    inputs.forEach(i => i.disabled = false);
-  } else {
-    row.classList.add('disabled');
-    inputs.forEach(i => i.disabled = true);
+async function forgotPassword() {
+  const email = document.getElementById('userEmail').value.trim();
+  if(!email) return showToast('⚠️ أدخل بريدك الإلكتروني أولاً');
+  try {
+    await auth.sendPasswordResetEmail(email);
+    showToast('📧 تم إرسال رابط الاستعادة');
+  } catch(e) {
+    showToast('❌ ' + (e.code==='auth/user-not-found'?'الحساب غير موجود':e.message));
   }
 }
 
-function saveTimeAvailability() {
-  studentData.timeAvailability = {};
-  DAYS.forEach(day => {
-    const cb = document.querySelector(`#dayrow_${day} input[type="checkbox"]`);
-    if (!cb) return;
-    const startEl = document.getElementById('start_' + day);
-    const endEl   = document.getElementById('end_' + day);
-    studentData.timeAvailability[day] = {
-      enabled: cb.checked,
-      start:   startEl?.value || '08:00',
-      end:     endEl?.value   || '22:00'
-    };
-  });
+async function loginWithGoogle() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithPopup(provider);
+  } catch(e) {
+    showToast('❌ ' + (e.code==='auth/operation-not-supported-in-this-environment'
+      ?'Google يعمل فقط على رابط Hosting':e.message));
+  }
 }
 
-// ============================================================
-// SUBJECTS (STEP 3)
-// ============================================================
+// ══════════════════════════════════════════════════════════════════
+// USER DATA
+// ══════════════════════════════════════════════════════════════════
+async function loadUserData(uid) {
+  try {
+    const doc = await db.collection('users').doc(uid).get();
+    if(doc.exists) {
+      userProfile = { ...userProfile, ...doc.data() };
+      document.getElementById('studentName').value = userProfile.name || '';
+      document.getElementById('peakTime').value = userProfile.peakTime || 'morning';
+      document.getElementById('dailyGoal').value = userProfile.dailyGoal || 4;
+      renderSubjects();
+      if(userProfile.schedule?.length) renderSchedule();
+      updateStats();
+      updateMizan();
+      document.getElementById('arenaWins').textContent = userProfile.arenaWins || 0;
+      document.getElementById('arenaRating').textContent = userProfile.arenaRating || 1000;
+      document.getElementById('arenaRatingDisplay').textContent = 'التقييم: ' + (userProfile.arenaRating || 1000);
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function saveProfile() {
+  if(!currentUser) return;
+  userProfile.name = document.getElementById('studentName').value.trim();
+  userProfile.peakTime = document.getElementById('peakTime').value;
+  userProfile.dailyGoal = parseInt(document.getElementById('dailyGoal').value);
+  userProfile.totalHours = parseInt(document.getElementById('totalHours').textContent) || 0;
+  try {
+    await db.collection('users').doc(currentUser.uid).set(userProfile, { merge:true });
+    showToast('💾 تم الحفظ بنجاح');
+  } catch(e) { showToast('❌ فشل الحفظ'); }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SUBJECTS
+// ══════════════════════════════════════════════════════════════════
 function addSubject() {
-  const name     = document.getElementById('subjectName').value.trim();
-  const hours    = parseInt(document.getElementById('subjectHours').value);
-  const priority = document.getElementById('subjectPriority').value;
-  const diff     = document.getElementById('subjectDifficulty').value;
-  const type     = document.getElementById('subjectType').value;
-  const exam     = document.getElementById('subjectExamDate').value;
-
-  if (!name)         { toast('⚠️ أدخل اسم المادة', 'error'); return; }
-  if (!hours || hours < 1) { toast('⚠️ أدخل عدد ساعات صحيح', 'error'); return; }
-  if (studentData.subjects.find(s => s.name === name)) { toast('⚠️ هذه المادة موجودة مسبقاً', 'error'); return; }
-
-  studentData.subjects.push({
-    id: Date.now(),
-    name, hours, priority, difficulty: diff, type, examDate: exam,
-    color: COLORS[studentData.subjects.length % COLORS.length],
-    progress: 0
-  });
-
-  document.getElementById('subjectName').value = '';
-  document.getElementById('subjectHours').value = '4';
-  document.getElementById('subjectExamDate').value = '';
+  const name = document.getElementById('subjName').value.trim();
+  const diff = parseInt(document.getElementById('subjDiff').value);
+  const chapters = parseInt(document.getElementById('subjChapters').value) || 0;
+  if(!name) return showToast('⚠️ أدخل اسم المادة');
+  userProfile.subjects = userProfile.subjects || [];
+  userProfile.subjects.push({ id:Date.now(), name, diff, chapters, progress:0 });
+  document.getElementById('subjName').value = '';
+  document.getElementById('subjChapters').value = '';
   renderSubjects();
-  toast('✅ تمت إضافة ' + name, 'success');
+  saveProfile();
 }
 
-function deleteSubject(id) {
-  studentData.subjects = studentData.subjects.filter(s => s.id !== id);
+function removeSubject(id) {
+  userProfile.subjects = userProfile.subjects.filter(s => s.id !== id);
   renderSubjects();
-  toast('تم حذف المادة');
+  saveProfile();
 }
 
 function renderSubjects() {
-  const list = document.getElementById('subjectsList');
-  if (!studentData.subjects.length) {
-    list.innerHTML = '<div class="empty-box"><div class="empty-box-icon">📚</div>لم تُضف مواد بعد</div>';
-    return;
-  }
-  list.innerHTML = studentData.subjects.map(s => `
-    <div class="subject-item">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="subject-dot" style="background:${s.color}"></div>
-        <div>
-          <div style="font-weight:700;font-size:0.92em">${s.name}</div>
-          <div style="font-size:0.75em;color:var(--text-muted)">
-            ${s.hours} ساعات/أسبوع &bull;
-            ${s.priority==='high'?'🔴 عالية':s.priority==='medium'?'🟡 متوسطة':'🟢 منخفضة'} &bull;
-            ${s.difficulty==='hard'?'صعبة':s.difficulty==='medium'?'متوسطة':'سهلة'}
-            ${s.examDate ? ' &bull; امتحان: ' + s.examDate : ''}
-          </div>
-        </div>
-      </div>
-      <button class="btn-delete" onclick="deleteSubject(${s.id})"><i class="ri-delete-bin-line"></i></button>
+  const c = document.getElementById('subjectsList');
+  if(!userProfile.subjects?.length) { c.innerHTML=''; return; }
+  document.getElementById('subjCount').textContent = userProfile.subjects.length + ' مواد';
+  const diffColor = { 3:'var(--rose)', 2:'var(--gold)', 1:'var(--teal)' };
+  c.innerHTML = userProfile.subjects.map(s => `
+    <div class="subj-tag">
+      <span style="width:8px; height:8px; border-radius:50%; background:${diffColor[s.diff]}; flex-shrink:0; display:inline-block"></span>
+      <span>${s.name}</span>
+      ${s.chapters?`<span style="color:var(--muted); font-size:10px">(${s.chapters} فصل)</span>`:''}
+      <span class="rm-btn" onclick="removeSubject(${s.id})"><i class="ri-close-line"></i></span>
     </div>
   `).join('');
 }
 
-// ============================================================
-// SMART SCHEDULE GENERATION
-// ============================================================
-async function generateSmartSchedule() {
-  if (studentData.subjects.length === 0) { toast('⚠️ أضف مواد أولاً', 'error'); return; }
-  saveTimeAvailability();
+// ══════════════════════════════════════════════════════════════════
+// SCHEDULE GENERATION
+// ══════════════════════════════════════════════════════════════════
+function generateAISchedule() {
+  if(!userProfile.subjects?.length) return showToast('⚠️ أضف مواد أولاً');
+  showToast('🪄 جارٍ تحليل بياناتك...');
 
-  const btn = document.getElementById('generateBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="auth-loading" style="border-top-color:var(--ink)"></span> جاري التوليد...';
+  const peak = userProfile.peakTime || document.getElementById('peakTime').value;
+  const daysAr = ['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+  const daysEn = ['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'];
+  const typesAr = ['تركيز عميق','مراجعة','حل مسائل','اختبار قصير','مراجعة سريعة'];
+  const typesEn = ['Deep Focus','Review','Problem Solving','Mini Test','Quick Review'];
+  const times = {
+    morning: ['04:30','06:00','07:30','09:00','10:30'],
+    evening: ['15:00','16:30','18:00','19:30','21:00']
+  };
 
-  const restDay       = document.getElementById('toggleRest').classList.contains('on');
-  const balanced      = document.getElementById('toggleBalance').classList.contains('on');
-  const gradual       = document.getElementById('toggleGradual').classList.contains('on');
-  const pref          = studentData.learningStyle;
-  const slots         = TIME_SLOTS[pref] || TIME_SLOTS.flexible;
-
-  // Weight calculation: priority + difficulty
-  const priorityW = { high:3, medium:2, low:1 };
-  const diffW     = { hard:3, medium:2, easy:1 };
-
-  const weighted = studentData.subjects.map(s => ({
-    ...s, weight: (priorityW[s.priority]||1) * (diffW[s.difficulty]||1)
-  }));
-
-  studentData.savedSchedule = [];
-
-  // Available study days (excluding Fri if rest enabled)
-  const activeDays = DAYS.filter(d => {
-    if (restDay && d === 'الجمعة') return false;
-    return studentData.timeAvailability[d]?.enabled;
+  const sorted = [...userProfile.subjects].sort((a,b) => b.diff - a.diff);
+  const schedule = daysAr.map((dayAr, i) => {
+    const dayTimes = times[peak];
+    const tasksCount = i === 5 ? 1 : (i % 7 === 6 ? 1 : Math.min(3, sorted.length));
+    const tasks = Array.from({ length:tasksCount }, (_, ti) => ({
+      time: dayTimes[ti % dayTimes.length],
+      subject: sorted[(i + ti) % sorted.length].name,
+      typeAr: typesAr[ti % typesAr.length],
+      typeEn: typesEn[ti % typesEn.length],
+      done: false
+    }));
+    return { dayAr, dayEn:daysEn[i], tasks };
   });
 
-  if (!activeDays.length) {
-    // fallback: use all days except friday
-    DAYS.filter(d => !(restDay && d==='الجمعة')).forEach(d => activeDays.push(d));
+  userProfile.schedule = schedule;
+  renderSchedule();
+  saveProfile();
+  setTimeout(() => goPage('pageSchedule'), 300);
+}
+
+function renderSchedule() {
+  const c = document.getElementById('scheduleContainer');
+  const today = new Date().getDay();
+  const todayIndex = today === 0 ? 6 : today - 1;
+
+  c.innerHTML = (userProfile.schedule || []).map((day, di) => `
+    <div class="card${di === todayIndex ? ' card-glow' : ''}" style="position:relative">
+      ${di === todayIndex ? '<span class="badge badge-live" style="position:absolute;top:14px;inset-inline-end:14px">اليوم</span>' : ''}
+      <h4 style="color:var(--gold); font-family:var(--font-display); border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:14px;">
+        ${currentLang==='ar' ? day.dayAr : day.dayEn}
+      </h4>
+      ${(day.tasks || []).map((t, ti) => `
+        <div class="task-item${t.done?' done':''}">
+          <div class="task-time">${t.time}</div>
+          <div class="task-info">
+            <div class="task-subj">${t.subject}</div>
+            <div class="task-type">${currentLang==='ar'?t.typeAr:t.typeEn}</div>
+          </div>
+          <button class="task-done-btn" onclick="toggleTask(${di},${ti})">
+            ${t.done ? '<i class="ri-check-line"></i>' : ''}
+          </button>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+
+  if(userProfile.name) {
+    document.getElementById('welcomeMsg').textContent =
+      (currentLang==='ar'?'خطة ':'Plan of ') + userProfile.name;
   }
+  updateStats();
+}
 
-  // Sort subjects by weight for gradual approach
-  const sorted = gradual
-    ? [...weighted].sort((a,b) => a.weight - b.weight)  // easy first
-    : weighted;
+function toggleTask(di, ti) {
+  userProfile.schedule[di].tasks[ti].done = !userProfile.schedule[di].tasks[ti].done;
+  const done = userProfile.schedule[di].tasks[ti].done;
+  if(done) spawnConfetti();
+  renderSchedule();
+  saveProfile();
+}
 
-  // Distribute: for each subject, assign sessions across available days based on hours
-  let slotIndex = 0;
-  const daySessionCount = {};
-  activeDays.forEach(d => daySessionCount[d] = 0);
+function updateStats() {
+  const total = (userProfile.schedule||[]).reduce((a,d) => a+(d.tasks||[]).length, 0);
+  const done  = (userProfile.schedule||[]).reduce((a,d) => a+(d.tasks||[]).filter(t=>t.done).length, 0);
+  const pct   = total ? Math.round(done/total*100) : 0;
+  document.getElementById('todayPct').textContent = pct + '%';
+  document.getElementById('todayProg').style.width = pct + '%';
+  const ct = done;
+  const hours = Math.round(ct * 1.5);
+  document.getElementById('completedTasks').textContent = ct;
+  document.getElementById('totalHours').textContent = hours;
+  document.getElementById('streakNum').textContent = userProfile.streak || 0;
+  const level = Math.floor(done / 5) + 1;
+  document.getElementById('levelVal').textContent = level;
+  document.getElementById('progressStat').textContent =
+    `${done} / ${total} ${currentLang==='ar'?'مهمة منجزة':'tasks done'}`;
 
-  sorted.forEach(sub => {
-    let sessionsNeeded = Math.max(1, Math.round(sub.hours / 1.5)); // ~1.5h per session
-    let assigned = 0;
-    let attempts = 0;
+  if(currentUser) {
+    db.collection('users').orderBy('totalHours','desc').limit(50).get().then(snap => {
+      const idx = snap.docs.findIndex(d => d.id === currentUser.uid);
+      document.getElementById('rankVal').textContent = idx >= 0 ? '#'+(idx+1) : '–';
+    }).catch(()=>{});
+  }
+  updateMizan();
+}
 
-    while (assigned < sessionsNeeded && attempts < 100) {
-      attempts++;
-      // Pick day with fewest sessions (balanced)
-      let day;
-      if (balanced) {
-        day = activeDays.reduce((a,b) => daySessionCount[a]<=daySessionCount[b] ? a : b);
-      } else {
-        day = activeDays[Math.floor(Math.random() * activeDays.length)];
-      }
+function updateMizan() {
+  const total = (userProfile.schedule||[]).reduce((a,d) => a+(d.tasks||[]).length, 0);
+  const done  = (userProfile.schedule||[]).reduce((a,d) => a+(d.tasks||[]).filter(t=>t.done).length, 0);
+  const pct   = total ? Math.round(done/total*100) : 0;
+  document.getElementById('mizanCommit').textContent = pct + '%';
+  document.getElementById('mizanFocus').textContent = Math.round(done*1.5) + 'h';
+  document.getElementById('mizanStreak').textContent = userProfile.streak || 0;
+  document.getElementById('mizanGroups').textContent = userProfile.mizanGroups || 0;
+  document.getElementById('weeklyGoalPct').textContent = pct + '%';
+  document.getElementById('weeklyGoalProg').style.width = pct + '%';
 
-      // Check if this subject is already on this day (balance mode)
-      const alreadyOnDay = balanced && studentData.savedSchedule.some(
-        s => s.day === day && s.subjectId === sub.id
-      );
-      if (alreadyOnDay && activeDays.length > 1 && assigned < sessionsNeeded - 1) continue;
+  // Subject progress bars
+  const c = document.getElementById('subjectProgress');
+  if(!userProfile.subjects?.length) { c.innerHTML='<p style="color:var(--muted);font-size:0.85em">لا توجد مواد</p>'; return; }
+  c.innerHTML = userProfile.subjects.map(s => {
+    const subjTasks = (userProfile.schedule||[]).reduce((acc,d) =>
+      acc + d.tasks.filter(t => t.subject===s.name && t.done).length, 0);
+    const subjTotal = (userProfile.schedule||[]).reduce((acc,d) =>
+      acc + d.tasks.filter(t => t.subject===s.name).length, 0);
+    const p = subjTotal ? Math.round(subjTasks/subjTotal*100) : 0;
+    return `
+      <div style="margin-bottom:14px">
+        <div class="prog-meta">
+          <span style="font-weight:700">${s.name}</span>
+          <span>${p}%</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${p}%"></div></div>
+      </div>`;
+  }).join('');
+}
 
-      // Get time from day availability
-      const dayInfo = studentData.timeAvailability[day];
-      let time;
-      if (dayInfo?.start) {
-        // Use actual start time with slot offset
-        const [h,m] = dayInfo.start.split(':').map(Number);
-        const offsetMin = (daySessionCount[day] % 4) * 90;
-        const totalMin  = h * 60 + m + offsetMin;
-        const hh = Math.floor(totalMin / 60) % 24;
-        const mm = totalMin % 60;
-        time = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-      } else {
-        time = slots[slotIndex % slots.length];
-        slotIndex++;
-      }
+// ══════════════════════════════════════════════════════════════════
+// GROUP STUDY
+// ══════════════════════════════════════════════════════════════════
+async function initGroupRoom() {
+  if(!currentUser) return;
+  const roomRef = db.collection('rooms').doc(currentUser.uid);
+  const roomDoc = await roomRef.get();
+  let code;
+  if(!roomDoc.exists) {
+    code = 'MAS-' + Math.random().toString(36).substring(2,6).toUpperCase();
+    await roomRef.set({
+      code, owner:currentUser.uid, members:{},
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } else {
+    code = roomDoc.data().code;
+  }
+  currentRoomId = currentUser.uid;
+  document.getElementById('myInviteCode').textContent = code;
+  await roomRef.update({
+    [`members.${currentUser.uid}`]: { name:userProfile.name||'مجهول', status:'online' }
+  });
+  listenToRoom(currentUser.uid);
+}
 
-      studentData.savedSchedule.push({
-        id: Date.now() + Math.random(),
-        day, time,
-        subject: sub.name,
-        subjectId: sub.id,
-        color: sub.color,
-        done: false
-      });
-      daySessionCount[day] = (daySessionCount[day] || 0) + 1;
-      assigned++;
+function listenToRoom(roomId) {
+  currentRoomId = roomId;
+  db.collection('rooms').doc(roomId).onSnapshot(snap => {
+    if(!snap.exists) return;
+    const data = snap.data();
+    const members = data.members || {};
+    document.getElementById('membersCount').textContent = Object.keys(members).length + ' / 8';
+    renderMembersLive(members);
+    syncSessionFromDB(data);
+    syncPomodoroFromDB(data);
+    // Focus mode sync
+    const inputRow = document.getElementById('chatInputRow');
+    if(data.isFocusMode) {
+      inputRow.classList.add('chat-disabled');
+      document.getElementById('chatInput').placeholder = '🔕 وضع التركيز مفعّل';
+    } else {
+      inputRow.classList.remove('chat-disabled');
+      document.getElementById('chatInput').placeholder = 'اكتب رسالة...';
     }
+    // Update focus toggle UI
+    const isOn = data.isFocusMode || false;
+    document.getElementById('focusToggle').classList.toggle('on', isOn);
+    focusModeActive = isOn;
   });
 
-  // Sort each day's sessions by time
-  studentData.savedSchedule.sort((a,b) => {
-    const di = DAYS.indexOf(a.day) - DAYS.indexOf(b.day);
-    if (di !== 0) return di;
-    return a.time.localeCompare(b.time);
-  });
-
-  studentData.sessionDone = {};
-
-  // Save to Firestore
-  try {
-    await db.collection('users').doc(currentUser.uid).set({
-      ...studentData,
-      lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-    }, {merge:true});
-    toast('✅ تم توليد جدولك الذكي!', 'success');
-    goPage('pageSchedule');
-  } catch(e) {
-    toast('❌ فشل الحفظ: ' + e.message, 'error');
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '✦ إنشاء المسار الآن';
+  db.collection('rooms').doc(roomId).collection('chat')
+    .orderBy('time','asc').onSnapshot(snap => {
+      const msgs = [];
+      snap.forEach(d => msgs.push(d.data()));
+      renderChatLive(msgs);
+    });
 }
 
-function confirmRegenerate() {
-  if (confirm('هل تريد إعادة توليد الجدول؟ سيتم حذف الجدول الحالي.')) {
-    goPage('pageSetup');
-    currentWizardStep = 1;
-    updateWizard();
-  }
-}
-
-// ============================================================
-// RENDER SCHEDULE
-// ============================================================
-function renderFinalSchedule() {
-  if (!studentData.savedSchedule || !studentData.savedSchedule.length) {
-    document.getElementById('weekSchedule').innerHTML =
-      '<div class="empty-box" style="grid-column:1/-1"><div class="empty-box-icon">📋</div>لا يوجد جدول بعد<br><small>اكمل الإعداد أولاً</small></div>';
-    renderStats();
-    renderProgress();
+function renderMembersLive(members) {
+  const c = document.getElementById('membersList');
+  const entries = Object.entries(members);
+  if(!entries.length) {
+    c.innerHTML = '<span style="color:var(--muted); font-size:12px">لا أعضاء نشطون</span>';
     return;
   }
+  c.innerHTML = entries.map(([uid, m]) => `
+    <div class="member-chip">
+      <div class="member-dot ${m.status==='online'?'online':m.status==='away'?'away':'offline'}"></div>
+      <span>${m.name || 'مجهول'}</span>
+      ${uid===currentUser?.uid?'<span class="badge badge-gold" style="font-size:8px; padding:1px 5px">أنت</span>':''}
+    </div>
+  `).join('');
+}
 
-  // Today header
-  const today = new Date();
-  const dayNames = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const todayAr = dayNames[today.getDay()];
-  document.getElementById('todayDateStr').textContent =
-    today.toLocaleDateString('ar-IQ', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('todayTitle').textContent =
-    `مرحباً ${studentData.name || 'بك'} 👋`;
-
-  // Today tasks
-  const todayTasks = studentData.savedSchedule
-    .filter(s => s.day === todayAr)
-    .sort((a,b) => a.time.localeCompare(b.time));
-
-  const todayContainer = document.getElementById('todayTasks');
-  if (todayTasks.length === 0) {
-    todayContainer.innerHTML = '<div style="color:rgba(255,255,255,0.35);font-size:0.85em;">لا توجد جلسات اليوم 🌙</div>';
-  } else {
-    todayContainer.innerHTML = todayTasks.map(t => {
-      const isDone = studentData.sessionDone?.[t.id];
-      return `
-        <div class="today-session-card" onclick="toggleSession('${t.id}')" style="border-right-color:${t.color};${isDone?'opacity:0.5;':''}" title="اضغط لتأشير كمنجز">
-          <div class="today-session-time">${formatTime(t.time)}</div>
-          <div class="today-session-subj">${t.subject}</div>
-          <div class="today-session-done">${isDone ? '✅ منجز' : '⏳ قيد الانتظار'}</div>
-        </div>`;
-    }).join('');
+function syncSessionFromDB(data) {
+  if(data.sessionTimer !== undefined) {
+    const h = String(Math.floor(data.sessionTimer/3600)).padStart(2,'0');
+    const m = String(Math.floor((data.sessionTimer%3600)/60)).padStart(2,'0');
+    const s = String(data.sessionTimer%60).padStart(2,'0');
+    const el = document.getElementById('sessionTimer');
+    el.textContent = `${h}:${m}:${s}`;
+    el.classList.toggle('running', data.sessionRunning);
   }
-
-  // Week view
-  const weekContainer = document.getElementById('weekSchedule');
-  weekContainer.innerHTML = DAYS.map(day => {
-    const dayTasks = studentData.savedSchedule
-      .filter(s => s.day === day)
-      .sort((a,b) => a.time.localeCompare(b.time));
-    const isToday = day === todayAr;
-    return `
-      <div class="day-col" style="${isToday?'border-color:var(--gold);':''}">
-        <div class="day-col-head" style="${isToday?'background:linear-gradient(90deg,var(--ink),#2a2e3e);':''}">
-          <span class="day-col-name">${day}${isToday?' 📍':''}</span>
-          <span class="day-col-cnt">${dayTasks.length}</span>
-        </div>
-        <div class="day-col-body">
-          ${dayTasks.length === 0
-            ? '<div style="padding:12px;font-size:0.8em;color:var(--text-muted);text-align:center;">راحة 🌿</div>'
-            : dayTasks.map(t => {
-                const isDone = studentData.sessionDone?.[t.id];
-                return `
-                  <div class="session-tile${isDone?' done':''}" onclick="toggleSession('${t.id}')" style="border-right-color:${t.color};" title="اضغط لتأشير كمنجز">
-                    <div class="session-tile-time">${formatTime(t.time)}</div>
-                    <div class="session-tile-subj">${t.subject}</div>
-                  </div>`;
-              }).join('')
-          }
-        </div>
-      </div>`;
-  }).join('');
-
-  renderStats();
-  renderProgress();
 }
 
-function formatTime(t) {
-  if (!t) return '';
-  const [h,m] = t.split(':').map(Number);
-  const suffix = h < 12 ? 'ص' : 'م';
-  const h12    = h % 12 || 12;
-  return `${h12}:${String(m).padStart(2,'0')} ${suffix}`;
-}
-
-async function toggleSession(sessionId) {
-  if (!studentData.sessionDone) studentData.sessionDone = {};
-  const wasDone = studentData.sessionDone[sessionId];
-  studentData.sessionDone[sessionId] = !wasDone;
-
-  if (!wasDone) {
-    // Gain XP
-    studentData.xp = (studentData.xp || 0) + 15;
-    studentData.levelNum = Math.floor(studentData.xp / 100) + 1;
-    toast('🎉 +15 XP! جلسة منجزة', 'success');
+function syncPomodoroFromDB(data) {
+  if(data.pomSeconds !== undefined && !pomodoroRunning) {
+    pomodoroSeconds = data.pomSeconds;
+    pomodoroPhase = data.pomPhase || 'focus';
+    updatePomUI();
   }
+}
 
+function renderChatLive(msgs) {
+  const c = document.getElementById('groupChat');
+  if(!msgs.length) {
+    c.innerHTML = '<div class="empty-state" style="padding:20px"><div class="empty-state-icon">💬</div><div class="empty-state-text">لا توجد رسائل بعد</div></div>';
+    return;
+  }
+  c.innerHTML = msgs.map(m => `
+    <div class="chat-msg">
+      <div class="chat-avatar">${(m.name||'؟')[0]}</div>
+      <div class="chat-bubble">
+        <div class="chat-name">${m.name||'مجهول'}</div>
+        ${escapeHtml(m.msg||'')}
+      </div>
+    </div>
+  `).join('');
+  c.scrollTop = c.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function sendChat() {
+  const inp = document.getElementById('chatInput');
+  const msg = inp.value.trim();
+  if(!msg || !currentUser || !currentRoomId) return;
+  if(forbiddenWords.some(w => msg.includes(w)))
+    return showToast('⚠️ رسالة غير مناسبة');
+  inp.value = '';
   try {
-    await db.collection('users').doc(currentUser.uid).update({
-      sessionDone: studentData.sessionDone,
-      xp: studentData.xp,
-      levelNum: studentData.levelNum
+    await db.collection('rooms').doc(currentRoomId).collection('chat').add({
+      name: userProfile.name || 'مجهول',
+      msg, uid: currentUser.uid,
+      avatar: (userProfile.name||'؟')[0],
+      time: firebase.firestore.FieldValue.serverTimestamp()
     });
-  } catch(e) {}
-
-  renderFinalSchedule();
-  renderXpBar();
+  } catch(e) { showToast('❌ فشل الإرسال'); }
 }
 
-function renderStats() {
-  const total = studentData.savedSchedule?.length || 0;
-  const done  = Object.values(studentData.sessionDone||{}).filter(Boolean).length;
-  const pct   = total ? Math.round((done/total)*100) : 0;
-
-  // Count unique subjects
-  const subjectCount = [...new Set((studentData.savedSchedule||[]).map(s=>s.subject))].length;
-
-  document.getElementById('statsDashboard').innerHTML = `
-    <div class="stat-tile">
-      <div class="stat-val">${total}</div>
-      <div class="stat-lbl">إجمالي الجلسات</div>
-    </div>
-    <div class="stat-tile">
-      <div class="stat-val">${done}</div>
-      <div class="stat-lbl">جلسة منجزة</div>
-    </div>
-    <div class="stat-tile">
-      <div class="stat-val">${pct}%</div>
-      <div class="stat-lbl">نسبة الإنجاز</div>
-    </div>
-    <div class="stat-tile">
-      <div class="stat-val">${subjectCount}</div>
-      <div class="stat-lbl">مواد مجدولة</div>
-    </div>
-  `;
-}
-
-function renderProgress() {
-  const subjects = studentData.subjects || [];
-  if (!subjects.length) { document.getElementById('progressGrid').innerHTML = ''; return; }
-
-  const grid = document.getElementById('progressGrid');
-  grid.innerHTML = subjects.map(sub => {
-    const sessions = (studentData.savedSchedule||[]).filter(s => s.subject === sub.name);
-    const doneCount = sessions.filter(s => studentData.sessionDone?.[s.id]).length;
-    const pct = sessions.length ? Math.round((doneCount / sessions.length) * 100) : 0;
-    return `
-      <div class="progress-row">
-        <div class="progress-row-top">
-          <div class="progress-row-name">
-            <span style="display:inline-block;width:10px;height:10px;background:${sub.color};border-radius:50%;margin-left:8px;"></span>
-            ${sub.name}
-          </div>
-          <div class="progress-row-pct">${pct}%</div>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill" style="width:${pct}%;background:linear-gradient(90deg,${sub.color},${sub.color}99)"></div>
-        </div>
-        <div style="font-size:0.75em;color:var(--text-muted);margin-top:5px">${doneCount} / ${sessions.length} جلسة</div>
-      </div>`;
-  }).join('');
-}
-
-// ============================================================
-// ROOMS
-// ============================================================
-function toggleCreateRoom() {
-  const panel = document.getElementById('createRoomForm');
-  panel.classList.toggle('hidden');
-}
-
-async function publishRoom() {
-  const topic    = document.getElementById('roomTopic').value.trim();
-  const duration = parseInt(document.getElementById('roomDuration').value) || 25;
-  if (!topic) { toast('⚠️ أدخل موضوع الدراسة', 'error'); return; }
-
-  try {
-    const docRef = await db.collection('rooms').add({
-      topic,
-      duration,
-      hostId:   currentUser.uid,
-      hostName: studentData.name || 'طالب',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      members:  [currentUser.uid],
-      status:   'active'
-    });
-    document.getElementById('roomTopic').value = '';
-    toggleCreateRoom();
-    joinRoom(docRef.id, topic, duration);
-  } catch(e) { toast('❌ فشل إنشاء الغرفة: ' + e.message, 'error'); }
-}
-
-function listenToRooms() {
-  if (roomsListener) roomsListener();
-  roomsListener = db.collection('rooms')
-    .where('status', '==', 'active')
-    .onSnapshot(snapshot => {
-      const container = document.getElementById('roomsContainer');
-      const badge     = document.getElementById('roomsBadge');
-      const countEl   = document.getElementById('activeRoomsCount');
-
-      countEl.textContent = snapshot.size + ' غرف نشطة';
-
-      if (snapshot.size > 0) {
-        badge.textContent = snapshot.size;
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
-      }
-
-      if (snapshot.empty) {
-        container.innerHTML = `
-          <div class="empty-box" style="grid-column:1/-1">
-            <div class="empty-box-icon">📚</div>
-            لا توجد غرف مفتوحة حالياً<br>
-            <small style="margin-top:8px;display:block;">كن أول من يبدأ جلسة تركيز!</small>
-          </div>`;
-        return;
-      }
-
-      container.innerHTML = '';
-      snapshot.forEach(doc => {
-        const r = doc.data();
-        const memberCount = r.members?.length || 1;
-        const isMyRoom    = r.hostId === currentUser.uid;
-        const card = document.createElement('div');
-        card.className = 'room-card';
-        card.innerHTML = `
-          <div class="room-card-accent ongoing" style="background:linear-gradient(90deg,var(--teal),var(--gold))"></div>
-          <div class="room-card-body">
-            <div class="room-card-topic">${r.topic}</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
-              <span class="tag tag-teal"><i class="ri-time-line"></i> ${r.duration || 25} دقيقة</span>
-              <span class="tag tag-live">مباشر</span>
-            </div>
-            <div class="room-card-footer">
-              <div class="room-host">
-                <div class="room-host-avatar">${(r.hostName||'؟')[0]}</div>
-                <span>${r.hostName || 'مجهول'}</span>
-                ${isMyRoom ? ' <span class="tag tag-gold" style="font-size:0.68em;">أنت</span>' : ''}
-              </div>
-              <div class="room-members-count"><i class="ri-user-line"></i> ${memberCount}</div>
-            </div>
-            <button class="btn btn-teal btn-full btn-sm" style="margin-top:12px" onclick="joinRoom('${doc.id}', '${escapeAttr(r.topic)}', ${r.duration||25})">
-              <i class="ri-door-open-line"></i> انضمام
-            </button>
-            ${isMyRoom ? `<button class="btn-delete btn-full" style="margin-top:6px;width:100%;display:block;text-align:center;" onclick="closeMyRoom('${doc.id}')">إغلاق الغرفة</button>` : ''}
-          </div>`;
-        container.appendChild(card);
-      });
-    }, err => console.error('Rooms listener error:', err));
-}
-
-function escapeAttr(str) {
-  return String(str).replace(/'/g,"&#39;").replace(/"/g,"&quot;");
-}
-
-async function joinRoom(roomId, topic, duration) {
-  currentRoomId = roomId;
-  const durationMins = duration || 25;
-
-  try {
-    await db.collection('rooms').doc(roomId).update({
-      members: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
-    });
-  } catch(e) {}
-
-  document.getElementById('activeRoomTopic').textContent = topic || 'جلسة تركيز';
-  document.getElementById('studyTimerOverlay').style.display = 'flex';
-  startPomodoro(durationMins);
-
-  // Listen to member count
-  db.collection('rooms').doc(roomId).onSnapshot(snap => {
-    if (!snap.exists) return;
-    const count = snap.data().members?.length || 1;
-    document.getElementById('memberCountDisplay').textContent = `👥 ${count} يدرسون معك الآن`;
+function groupTab(tab) {
+  ['myRoom','joinRoom','leaderboard'].forEach(t => {
+    const el = document.getElementById('groupTab' + t[0].toUpperCase() + t.slice(1));
+    if(el) el.style.display = t===tab?'block':'none';
   });
+  const map = { myRoom:'tabMyRoom', joinRoom:'tabJoinRoom', leaderboard:'tabLeader' };
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(map[tab])?.classList.add('active');
+  if(tab==='joinRoom') renderPublicRooms();
+  if(tab==='leaderboard') renderLeaderboard();
 }
 
-function startPomodoro(minutes) {
-  timerTotal     = minutes * 60;
-  timerRemaining = timerTotal;
-  clearInterval(timerInterval);
-  updateTimerDisplay();
-  document.getElementById('timerPhase').textContent = 'جلسة تركيز 🎯';
+function copyCode() {
+  const code = document.getElementById('myInviteCode').textContent;
+  navigator.clipboard?.writeText(code).catch(()=>{});
+  showToast('📋 تم نسخ الكود: ' + code);
+}
 
-  timerInterval = setInterval(() => {
-    timerRemaining--;
-    if (timerRemaining <= 0) {
-      clearInterval(timerInterval);
-      document.getElementById('timerDisplay').textContent = '00:00';
-      document.getElementById('timerProgress').style.width = '0%';
-      document.getElementById('timerPhase').textContent = '✅ انتهت الجلسة!';
-      toast('🎉 أحسنت! انتهت جلسة التركيز', 'success');
-      // Grant XP for completing session
-      studentData.xp = (studentData.xp || 0) + 20;
-      studentData.levelNum = Math.floor(studentData.xp / 100) + 1;
-      if(currentUser) {
-        db.collection('users').doc(currentUser.uid).update({ xp: studentData.xp, levelNum: studentData.levelNum }).catch(()=>{});
-      }
+function shareRoom() {
+  const code = document.getElementById('myInviteCode').textContent;
+  if(navigator.share) navigator.share({ title:'Masar Room', text:'انضم لغرفتي: '+code });
+  else copyCode();
+}
+
+async function joinRoom() {
+  const code = document.getElementById('joinCode').value.trim().toUpperCase();
+  if(!code) return showToast('⚠️ أدخل الكود');
+  const snap = await db.collection('rooms').where('code','==',code).limit(1).get();
+  if(snap.empty) return showToast('❌ الغرفة غير موجودة');
+  const roomDoc = snap.docs[0];
+  const roomId = roomDoc.id;
+  const members = roomDoc.data().members || {};
+  if(Object.keys(members).length >= 8) return showToast('⚠️ الغرفة ممتلئة (8/8)');
+  await roomDoc.ref.update({
+    [`members.${currentUser.uid}`]: { name:userProfile.name||'ضيف', status:'online' }
+  });
+  showToast('🚀 انضممت لـ ' + code);
+  listenToRoom(roomId);
+  groupTab('myRoom');
+}
+
+function joinPublicRoom(code) {
+  document.getElementById('joinCode').value = code;
+  joinRoom();
+}
+
+async function renderPublicRooms() {
+  const c = document.getElementById('publicRoomsList');
+  c.innerHTML = '<div class="empty-state"><div class="loading-spin"></div></div>';
+  try {
+    const snap = await db.collection('rooms').limit(10).get();
+    if(snap.empty) {
+      c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏠</div><div class="empty-state-text">لا توجد غرف متاحة حالياً</div></div>';
       return;
     }
-    updateTimerDisplay();
-  }, 1000);
-}
-
-function updateTimerDisplay() {
-  const m = Math.floor(timerRemaining / 60);
-  const s = timerRemaining % 60;
-  document.getElementById('timerDisplay').textContent =
-    `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  const pct = timerTotal > 0 ? (timerRemaining / timerTotal) * 100 : 0;
-  document.getElementById('timerProgress').style.width = pct + '%';
-}
-
-async function leaveRoom() {
-  clearInterval(timerInterval);
-  document.getElementById('studyTimerOverlay').style.display = 'none';
-  if (currentRoomId && currentUser) {
-    try {
-      await db.collection('rooms').doc(currentRoomId).update({
-        members: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
-      });
-    } catch(e) {}
-  }
-  currentRoomId = null;
-}
-
-async function closeMyRoom(roomId) {
-  if (!confirm('هل تريد إغلاق الغرفة؟')) return;
-  try {
-    await db.collection('rooms').doc(roomId).update({ status: 'closed' });
-    toast('تم إغلاق الغرفة', 'success');
-  } catch(e) { toast('خطأ: ' + e.message, 'error'); }
-}
-
-// ============================================================
-// ARENA (XP + LEADERBOARD)
-// ============================================================
-function renderXpBar() {
-  const xp      = studentData.xp || 0;
-  const level   = studentData.levelNum || 1;
-  const xpInLvl = xp % 100;
-  const xpNext  = 100;
-
-  document.getElementById('xpLevelNum').textContent  = level;
-  document.getElementById('xpBarName').textContent   = studentData.name || 'طالب';
-  document.getElementById('xpBarCount').textContent  = `${xpInLvl} / ${xpNext} XP`;
-  document.getElementById('xpFillBar').style.width   = xpInLvl + '%';
-}
-
-async function loadLeaderboard() {
-  try {
-    const snap = await db.collection('users')
-      .orderBy('xp', 'desc')
-      .limit(10)
-      .get();
-
-    const list = document.getElementById('leaderboardList');
-    if (snap.empty) {
-      list.innerHTML = '<div class="empty-box" style="padding:20px"><div class="empty-box-icon">🏅</div>لا يوجد بيانات بعد</div>';
-      return;
-    }
-
-    const rankClass = i => i===0?'gold':i===1?'silver':i===2?'bronze':'';
-    const rankIcon  = i => i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-
-    list.innerHTML = snap.docs.map((doc, i) => {
-      const d   = doc.data();
-      const isMe = doc.id === currentUser?.uid;
-      const lvl  = d.levelNum || 1;
+    c.innerHTML = snap.docs.map(d => {
+      const r = d.data();
+      const count = Object.keys(r.members||{}).length;
       return `
-        <div class="lb-row ${isMe?'lb-me':''}">
-          <div class="lb-rank ${rankClass(i)}">${rankIcon(i)||('#'+(i+1))}</div>
-          <div class="lb-avatar">${(d.name||'؟')[0]}</div>
-          <div class="lb-name">
-            ${d.name || 'طالب'}
-            ${isMe ? '<span class="tag tag-gold" style="font-size:0.65em;margin-right:4px;">أنت</span>' : ''}
-            <div class="lb-level">المستوى ${lvl}</div>
+        <div class="room-item">
+          <div class="room-icon"><i class="ri-door-open-line"></i></div>
+          <div style="flex:1; min-width:0">
+            <div style="font-weight:800; color:var(--gold); font-family:var(--font-mono)">${r.code||'–'}</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:2px">${count} أعضاء • ${count<8?'متاحة':'ممتلئة'}</div>
           </div>
-          <div class="lb-xp">${d.xp||0} XP</div>
+          ${count < 8 ? `<button class="btn btn-sm btn-purple-solid" onclick="joinPublicRoom('${r.code}')">انضمام</button>` : '<span class="badge badge-rose">ممتلئة</span>'}
         </div>`;
     }).join('');
-  } catch(e) {
-    // Silently fail if index not ready
-    console.warn('Leaderboard:', e.message);
+  } catch(e) { c.innerHTML = '<div class="empty-state"><div class="empty-state-text" style="color:var(--rose)">خطأ في التحميل</div></div>'; }
+}
+
+async function renderLeaderboard() {
+  const c = document.getElementById('leaderboardList');
+  c.innerHTML = '<div class="empty-state"><div class="loading-spin"></div></div>';
+  try {
+    const snap = await db.collection('users').orderBy('totalHours','desc').limit(10).get();
+    const medals = ['🥇','🥈','🥉'];
+    c.innerHTML = snap.docs.map((d, i) => {
+      const u = d.data();
+      const isMe = d.id === currentUser?.uid;
+      return `
+        <div class="lb-item${isMe?' card-glow':''}">
+          <div class="lb-rank">${medals[i]||`#${i+1}`}</div>
+          <div class="lb-avatar">${(u.name||'؟')[0]}</div>
+          <div class="lb-info">
+            <div class="lb-name">${u.name||'مجهول'}${isMe?'<span class="badge badge-gold" style="margin-inline-start:6px;font-size:8px">أنت</span>':''}</div>
+            <div class="lb-meta">🔥${u.streak||0} يوم • ${u.arenaWins||0} انتصار</div>
+          </div>
+          <div class="lb-hours">${u.totalHours||0}h</div>
+        </div>`;
+    }).join('') || '<div class="empty-state"><div class="empty-state-text">لا يوجد ترتيب بعد</div></div>';
+  } catch(e) { c.innerHTML=''; }
+}
+
+// ── Session ──
+function isRoomOwner() { return currentRoomId === currentUser?.uid; }
+
+function toggleSession() {
+  if(!isRoomOwner()) return showToast('⛔ صاحب الغرفة فقط يتحكم');
+  sessionRunning = !sessionRunning;
+  const btn = document.getElementById('sessionBtn');
+  if(sessionRunning) {
+    db.collection('rooms').doc(currentRoomId).update({ sessionRunning:true });
+    sessionInterval = setInterval(() => {
+      sessionSeconds++;
+      const h = String(Math.floor(sessionSeconds/3600)).padStart(2,'0');
+      const m = String(Math.floor((sessionSeconds%3600)/60)).padStart(2,'0');
+      const s = String(sessionSeconds%60).padStart(2,'0');
+      document.getElementById('sessionTimer').textContent = `${h}:${m}:${s}`;
+      document.getElementById('sessionTimer').classList.add('running');
+      // Sync every 10s
+      if(sessionSeconds % 10 === 0)
+        db.collection('rooms').doc(currentRoomId).update({ sessionTimer:sessionSeconds });
+      // Update focus overlay
+      if(focusModeActive) document.getElementById('focusOverlayTime').textContent = `${h}:${m}:${s}`;
+    }, 1000);
+    btn.innerHTML = '<i class="ri-pause-fill"></i> إيقاف مؤقت';
+  } else {
+    clearInterval(sessionInterval);
+    db.collection('rooms').doc(currentRoomId).update({ sessionRunning:false });
+    btn.innerHTML = '<i class="ri-play-fill"></i> بدء الجلسة';
+    document.getElementById('sessionTimer').classList.remove('running');
   }
 }
 
-// ============================================================
-// DUEL SYSTEM
-// ============================================================
-async function findMatch() {
-  if (!currentUser) return;
-  const btn = document.getElementById('findMatchBtn');
-  btn.disabled = true;
-  document.getElementById('duelStatusMsg').textContent = 'جاري البحث...';
+function endSession() {
+  if(!isRoomOwner()) return showToast('⛔ صاحب الغرفة فقط يتحكم');
+  clearInterval(sessionInterval);
+  sessionRunning = false; sessionSeconds = 0;
+  document.getElementById('sessionTimer').textContent = '00:00:00';
+  document.getElementById('sessionTimer').classList.remove('running');
+  document.getElementById('sessionBtn').innerHTML = '<i class="ri-play-fill"></i> بدء الجلسة';
+  db.collection('rooms').doc(currentRoomId).update({ sessionTimer:0, sessionRunning:false });
+  userProfile.mizanGroups = (userProfile.mizanGroups||0) + 1;
+  saveProfile();
+  showToast('📊 تم حفظ الجلسة');
+}
 
-  document.getElementById('duelOverlay').style.display = 'flex';
-  document.getElementById('opponentFinder').style.display = 'block';
-  document.getElementById('duelContent').style.display = 'none';
+// ── Pomodoro ──
+function togglePomodoro() {
+  if(!isRoomOwner()) return showToast('⛔ صاحب الغرفة فقط يتحكم');
+  pomodoroRunning = !pomodoroRunning;
+  const btn = document.getElementById('pomBtn');
+  if(pomodoroRunning) {
+    btn.textContent = '⏸ إيقاف';
+    pomInterv = setInterval(() => {
+      pomodoroSeconds--;
+      updatePomUI();
+      if(pomodoroSeconds % 5 === 0)
+        db.collection('rooms').doc(currentRoomId).update({ pomSeconds:pomodoroSeconds, pomPhase:pomodoroPhase, pomRunning:true });
+      if(pomodoroSeconds <= 0) {
+        clearInterval(pomInterv);
+        pomodoroRunning = false;
+        pomodoroPhase = pomodoroPhase==='focus'?'break':'focus';
+        pomodoroSeconds = pomodoroPhase==='focus'?POM_FOCUS:POM_BREAK;
+        btn.textContent = '▶ بدء';
+        document.getElementById('pomLabel').textContent = pomodoroPhase==='focus'?'تركيز':'استراحة';
+        document.getElementById('pomPhaseBadge').textContent = pomodoroPhase==='focus'?'تركيز':'استراحة';
+        document.getElementById('pomRing').className = `pom-prog pom-${pomodoroPhase}-prog`;
+        db.collection('rooms').doc(currentRoomId).update({ pomSeconds:pomodoroSeconds, pomPhase:pomodoroPhase, pomRunning:false });
+        showToast(pomodoroPhase==='focus'?'📚 وقت التركيز!':'☕ وقت الاستراحة!');
+        updatePomUI();
+      }
+    }, 1000);
+  } else {
+    clearInterval(pomInterv);
+    btn.textContent = '▶ بدء';
+    db.collection('rooms').doc(currentRoomId).update({ pomRunning:false });
+  }
+}
 
-  const myUid = currentUser.uid;
+function resetPomodoro() {
+  if(!isRoomOwner()) return showToast('⛔ صاحب الغرفة فقط يتحكم');
+  clearInterval(pomInterv);
+  pomodoroRunning = false; pomodoroPhase = 'focus'; pomodoroSeconds = POM_FOCUS;
+  document.getElementById('pomBtn').textContent = '▶ بدء';
+  document.getElementById('pomLabel').textContent = 'تركيز';
+  document.getElementById('pomPhaseBadge').textContent = 'تركيز';
+  document.getElementById('pomRing').className = 'pom-prog pom-focus-prog';
+  db.collection('rooms').doc(currentRoomId)?.update({ pomSeconds:POM_FOCUS, pomPhase:'focus', pomRunning:false });
+  updatePomUI();
+}
 
-  // Clean up stale waiting entries (>2 min old)
+function updatePomUI() {
+  const total = pomodoroPhase==='focus'?POM_FOCUS:POM_BREAK;
+  const mins = String(Math.floor(pomodoroSeconds/60)).padStart(2,'0');
+  const secs = String(pomodoroSeconds%60).padStart(2,'0');
+  document.getElementById('pomTime').textContent = `${mins}:${secs}`;
+  const progress = pomodoroSeconds / total;
+  document.getElementById('pomRing').style.strokeDashoffset = TOTAL_CIRC * (1 - progress);
+  // Update focus overlay if active
+  if(focusModeActive) document.getElementById('focusOverlayTime').textContent = `${mins}:${secs}`;
+}
+
+// ── Focus Mode ──
+async function toggleFocusMode() {
+  if(!isRoomOwner()) return showToast('⛔ صاحب الغرفة فقط يتحكم');
+  const roomRef = db.collection('rooms').doc(currentRoomId);
   try {
-    const staleTime = new Date(Date.now() - 120000);
-    const stale = await db.collection('waitingRoom')
-      .where('joinedAt', '<', staleTime).get();
-    stale.forEach(d => d.ref.delete());
-  } catch(e) {}
-
-  // Look for someone waiting
-  try {
-    const snapshot = await db.collection('waitingRoom')
-      .where('uid', '!=', myUid)
-      .limit(1).get();
-
-    if (!snapshot.empty) {
-      const opponent = snapshot.docs[0].data();
-      await db.collection('waitingRoom').doc(opponent.uid).delete();
-      await startNewMatch(opponent);
+    const doc = await roomRef.get();
+    const newStatus = !(doc.data().isFocusMode || false);
+    await roomRef.update({ isFocusMode:newStatus });
+    if(newStatus) {
+      document.getElementById('focusOverlay').classList.add('active');
+      showToast('🔕 وضع التركيز مفعّل');
     } else {
-      // Add myself to waiting room
-      await db.collection('waitingRoom').doc(myUid).set({
-        name: studentData.name || 'طالب',
-        uid: myUid,
-        joinedAt: new Date()
+      document.getElementById('focusOverlay').classList.remove('active');
+      showToast('🔔 وضع التركيز متوقف');
+    }
+  } catch(e) { showToast('❌ خطأ'); }
+}
+
+function exitFocusOverlay() {
+  document.getElementById('focusOverlay').classList.remove('active');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ARENA
+// ══════════════════════════════════════════════════════════════════
+async function findArenaMatch() {
+  showToast('🔍 جارٍ البحث...');
+  document.getElementById('arenaLobby').style.display = 'none';
+  document.getElementById('arenaGame').style.display = 'block';
+  document.getElementById('player1Name').textContent = userProfile.name || 'أنت';
+  document.getElementById('player2Name').textContent = '⏳';
+  document.getElementById('qText').textContent = '';
+  showLoadingArena(currentLang==='ar'?'جارٍ البحث عن منافس...':'Searching for opponent...');
+
+  try {
+    const twoMinsAgo = new Date(Date.now() - 2*60*1000);
+    const all = await db.collection('matches').orderBy('createdAt','desc').limit(20).get();
+    const waiting = all.docs.find(d => {
+      const data = d.data();
+      const ca = data.createdAt?.toDate ? data.createdAt.toDate() : new Date(0);
+      return data.status==='waiting' && data.player1?.uid !== currentUser.uid && ca >= twoMinsAgo;
+    });
+
+    if(waiting) {
+      arenaMatchId = waiting.id;
+      arenaState.isPlayer1 = false;
+      await waiting.ref.update({
+        player2: { uid:currentUser.uid, name:userProfile.name||'ضيف', score:0 },
+        status:'asking'
       });
-      listenForIncomingMatch();
+      document.getElementById('player1Name').textContent = waiting.data().player1?.name || 'منافس';
+      document.getElementById('player2Name').textContent = userProfile.name || 'أنت';
+      showWaitingForQuestion();
+      showToast('⚔️ وجدنا منافس!');
+    } else {
+      arenaState.isPlayer1 = true;
+      const ref = await db.collection('matches').add({
+        player1: { uid:currentUser.uid, name:userProfile.name||'لاعب', score:0 },
+        player2:null, status:'waiting', questions:[], currentQ:0,
+        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      arenaMatchId = ref.id;
+      showLoadingArena(currentLang==='ar'?'بانتظار منافس...':'Waiting for opponent...');
+      showToast('⏳ أخبر صديقك بالضغط على "بحث"');
     }
+    listenToMatch(arenaMatchId);
   } catch(e) {
-    toast('❌ فشل البحث: ' + e.message, 'error');
-    cancelDuel();
+    showToast('❌ ' + e.message);
+    document.getElementById('arenaGame').style.display = 'none';
+    document.getElementById('arenaLobby').style.display = 'block';
   }
-
-  btn.disabled = false;
-  document.getElementById('duelStatusMsg').textContent = '';
 }
 
-function listenForIncomingMatch() {
-  if (matchListener) matchListener();
-  matchListener = db.collection('matches')
-    .where('player2', '==', currentUser.uid)
-    .where('status', '==', 'asking')
-    .onSnapshot(snap => {
-      if (!snap.empty && !currentMatchId) {
-        const matchDoc = snap.docs[0];
-        currentMatchId = matchDoc.id;
-        setupMatchInterface(matchDoc.data());
-      }
-    });
+function showLoadingArena(text) {
+  document.getElementById('qText').textContent = '';
+  document.getElementById('qOptions').innerHTML = `
+    <div style="text-align:center; padding:40px; color:var(--muted)">
+      <div class="loading-spin" style="margin-bottom:14px"></div>
+      <p>${text}</p>
+    </div>`;
 }
 
-async function startNewMatch(opponent) {
-  const matchRef = db.collection('matches').doc();
-  currentMatchId = matchRef.id;
-  const data = {
-    player1: currentUser.uid,
-    player1Name: studentData.name || 'أنت',
-    player2: opponent.uid,
-    player2Name: opponent.name,
-    p1Score: 0, p2Score: 0,
-    status: 'asking',
-    turn: currentUser.uid,
-    lastQuestion: '', lastAnswer: '',
-    rounds: 0,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  await matchRef.set(data);
-  setupMatchInterface(data);
-}
-
-function setupMatchInterface(matchData) {
-  if (matchListener) { matchListener(); matchListener = null; }
-  document.getElementById('opponentFinder').style.display = 'none';
-  document.getElementById('duelContent').style.display = 'block';
-  document.getElementById('duelResultPanel').style.display = 'none';
-
-  const isP1 = matchData.player1 === currentUser.uid;
-  document.getElementById('oppName').textContent = isP1 ? matchData.player2Name : matchData.player1Name;
-
-  syncMatchLogic();
-}
-
-function syncMatchLogic() {
-  if (matchListener) matchListener();
-  if (!currentMatchId) return;
-
-  matchListener = db.collection('matches').doc(currentMatchId).onSnapshot(doc => {
-    if (!doc.exists) return;
-    const data  = doc.data();
-    const isP1  = data.player1 === currentUser.uid;
-    const myTurn = data.turn === currentUser.uid;
-    const statusDiv = document.getElementById('duelWaitStatus');
-
-    // Scores
-    document.getElementById('myLiveScore').textContent  = isP1 ? (data.p1Score||0) : (data.p2Score||0);
-    document.getElementById('oppLiveScore').textContent = isP1 ? (data.p2Score||0) : (data.p1Score||0);
-
-    // End game after 5 rounds
-    if (data.rounds >= 5 || data.status === 'finished') {
-      endDuel(data, isP1);
-      return;
+function listenToMatch(matchId) {
+  db.collection('matches').doc(matchId).onSnapshot(snap => {
+    if(!snap.exists) return;
+    const data = snap.data();
+    document.getElementById('player1Score').textContent = data.player1?.score || 0;
+    document.getElementById('player2Score').textContent = data.player2?.score || 0;
+    if(data.status==='asking' && arenaState.isPlayer1 && !document.getElementById('arenaQ'))
+      showQuestionForm();
+    if(data.status==='answering' && !arenaState.isPlayer1) {
+      const q = data.questions?.[data.currentQ];
+      if(q) showQuestionToAnswer(q, data.currentQ, data.questions.length);
     }
+    if(data.status==='asking' && !arenaState.isPlayer1)
+      showWaitingForQuestion();
+    if(data.status==='asking' && arenaState.isPlayer1 && data.questions?.length > 0 && !document.getElementById('arenaQ'))
+      showQuestionForm();
+    if(data.status==='finished') endArenaLive(data);
+  });
+}
 
-    ['questionCreator','answerReceiver','judgePanel','duelResultPanel'].forEach(id => {
-      document.getElementById(id).style.display = 'none';
-    });
+function showQuestionForm() {
+  document.getElementById('qNum').textContent = (arenaState.qIndex + 1);
+  document.getElementById('qTimerBadge').textContent = '–';
+  document.getElementById('qText').innerHTML = `
+    <span style="color:var(--gold); font-size:0.85em; font-weight:700">✍️ اكتب سؤالك للمنافس:</span>`;
+  document.getElementById('qOptions').innerHTML = `
+    <input type="text" id="arenaQ" class="field-input" placeholder="السؤال..." style="margin-bottom:8px">
+    <div class="arena-input-group">
+      <input type="text" id="arenaOpt1" class="field-input" placeholder="✅ الإجابة الصحيحة" style="border-color:rgba(16,185,129,0.4)">
+      <input type="text" id="arenaOpt2" class="field-input" placeholder="خيار 2">
+      <input type="text" id="arenaOpt3" class="field-input" placeholder="خيار 3">
+      <input type="text" id="arenaOpt4" class="field-input" placeholder="خيار 4">
+    </div>
+    <button class="btn btn-primary btn-w100" style="margin-top:8px" onclick="submitQuestion()">
+      <i class="ri-send-plane-fill"></i> إرسال السؤال
+    </button>`;
+}
 
-    if (data.status === 'asking') {
-      if (myTurn) {
-        document.getElementById('questionCreator').style.display = 'block';
-        statusDiv.textContent = '🎯 دورك! اكتب سؤالاً صعباً لخصمك';
-      } else {
-        statusDiv.textContent = '⏳ انتظر.. الخصم يجهز لك سؤالاً';
-      }
-    } else if (data.status === 'answering') {
-      if (myTurn) {
-        document.getElementById('answerReceiver').style.display = 'block';
-        document.getElementById('receivedQuestion').textContent = data.lastQuestion;
-        statusDiv.textContent = '⚡ أجب سريعاً!';
-      } else {
-        statusDiv.textContent = '⏳ الخصم يحاول حل سؤالك...';
-      }
-    } else if (data.status === 'judging') {
-      if (myTurn) {
-        document.getElementById('judgePanel').style.display = 'block';
-        document.getElementById('opponentAnswerText').textContent = data.lastAnswer;
-        statusDiv.textContent = '⚖️ هل إجابة خصمك صحيحة؟';
-      } else {
-        statusDiv.textContent = '⏳ الخصم يراجع إجابتك...';
-      }
+async function submitQuestion() {
+  const q = document.getElementById('arenaQ')?.value.trim();
+  const o1 = document.getElementById('arenaOpt1')?.value.trim();
+  const o2 = document.getElementById('arenaOpt2')?.value.trim();
+  const o3 = document.getElementById('arenaOpt3')?.value.trim();
+  const o4 = document.getElementById('arenaOpt4')?.value.trim();
+  if(!q || !o1 || !o2) return showToast('⚠️ أدخل السؤال وخيارين على الأقل');
+  const opts = [o1,o2,o3,o4].filter(Boolean);
+  const snap = await db.collection('matches').doc(arenaMatchId).get();
+  const questions = snap.data().questions || [];
+  questions.push({ q, opts, ans:0 });
+  await db.collection('matches').doc(arenaMatchId).update({
+    questions, currentQ:questions.length-1, status:'answering'
+  });
+  document.getElementById('qText').textContent = '';
+  document.getElementById('qOptions').innerHTML = `
+    <div style="text-align:center; padding:30px; color:var(--muted)">
+      <div class="loading-spin" style="margin-bottom:12px"></div>
+      <p>بانتظار جواب المنافس...</p>
+    </div>`;
+  arenaState.qIndex++;
+}
+
+function showQuestionToAnswer(q, qIdx, total) {
+  document.getElementById('qNum').textContent = qIdx+1;
+  document.getElementById('qText').textContent = q.q;
+  arenaState.qTimer = 15;
+  clearInterval(arenaState.timer);
+  const timerEl = document.getElementById('qTimerBadge');
+  arenaState.timer = setInterval(() => {
+    arenaState.qTimer--;
+    timerEl.textContent = arenaState.qTimer + 's';
+    timerEl.className = 'q-timer-badge' + (arenaState.qTimer<=5?' urgent':'');
+    if(arenaState.qTimer <= 0) { clearInterval(arenaState.timer); submitAnswer(-1, q.ans, qIdx, total); }
+  }, 1000);
+  document.getElementById('qOptions').innerHTML = q.opts.map((o,i) =>
+    `<div class="q-opt" onclick="submitAnswer(${i},${q.ans},${qIdx},${total})">${o}</div>`
+  ).join('');
+}
+
+async function submitAnswer(chosen, correct, qIdx, total) {
+  clearInterval(arenaState.timer);
+  document.querySelectorAll('.q-opt').forEach((el, i) => {
+    if(i===correct) el.classList.add('correct');
+    else if(i===chosen) el.classList.add('wrong');
+    el.style.pointerEvents = 'none';
+  });
+  const snap = await db.collection('matches').doc(arenaMatchId).get();
+  let score = snap.data().player2?.score || 0;
+  if(chosen===correct) { score++; spawnConfetti(); }
+  const finished = qIdx >= 4;
+  await db.collection('matches').doc(arenaMatchId).update({
+    'player2.score': score, status: finished?'finished':'asking'
+  });
+  if(!finished) {
+    setTimeout(() => { showWaitingForQuestion(); document.getElementById('qText').textContent=''; }, 1200);
+  }
+}
+
+function showWaitingForQuestion() {
+  document.getElementById('qText').textContent = '';
+  document.getElementById('qTimerBadge').textContent = '–';
+  document.getElementById('qOptions').innerHTML = `
+    <div style="text-align:center; padding:30px; color:var(--muted)">
+      <div class="loading-spin" style="margin-bottom:12px"></div>
+      <p>بانتظار سؤال المنافس...</p>
+    </div>`;
+}
+
+async function endArenaLive(data) {
+  const isP1 = data.player1?.uid === currentUser?.uid;
+  const my = isP1?data.player1?.score:data.player2?.score;
+  const op = isP1?data.player2?.score:data.player1?.score;
+  const won = my > op;
+  if(won) {
+    userProfile.arenaWins = (userProfile.arenaWins||0)+1;
+    userProfile.arenaRating = (userProfile.arenaRating||1000)+25;
+    spawnConfetti(); spawnConfetti(); spawnConfetti();
+  } else if(my < op) {
+    userProfile.arenaRating = Math.max(800, (userProfile.arenaRating||1000)-15);
+  }
+  document.getElementById('arenaWins').textContent = userProfile.arenaWins || 0;
+  document.getElementById('arenaRating').textContent = userProfile.arenaRating || 1000;
+  document.getElementById('arenaRatingDisplay').textContent = 'التقييم: ' + (userProfile.arenaRating||1000);
+  saveProfile();
+  showToast(won?'🏆 انتصرت!':my===op?'🤝 تعادل!':'😤 حاول مرة أخرى!');
+  setTimeout(() => {
+    document.getElementById('arenaGame').style.display='none';
+    document.getElementById('arenaLobby').style.display='block';
+    arenaMatchId=null;
+  }, 3000);
+}
+
+// ── Solo ──
+function startSoloChallenge() {
+  arenaState.questions = arenaQuestions[currentLang] || arenaQuestions.ar;
+  arenaState.qIndex = 0; arenaState.p1 = 0; arenaState.p2 = 0;
+  arenaState.isPlayer1 = true; arenaMatchId = null;
+  document.getElementById('arenaLobby').style.display='none';
+  document.getElementById('arenaGame').style.display='block';
+  document.getElementById('player1Name').textContent = userProfile.name || 'أنت';
+  document.getElementById('player2Name').textContent = '🤖 AI';
+  loadSoloQ();
+}
+
+function loadSoloQ() {
+  const qs = arenaState.questions;
+  if(arenaState.qIndex >= qs.length) {
+    const won = arenaState.p1 > arenaState.p2;
+    if(won) {
+      userProfile.arenaWins = (userProfile.arenaWins||0)+1;
+      userProfile.arenaRating = (userProfile.arenaRating||1000)+10;
+      spawnConfetti(); spawnConfetti();
     }
-  });
-}
-
-async function sendQuestionToOpponent() {
-  const q = document.getElementById('myTypedQuestion').value.trim();
-  if (!q) { toast('⚠️ اكتب السؤال أولاً', 'error'); return; }
-  const snap = await db.collection('matches').doc(currentMatchId).get();
-  const data = snap.data();
-  const oppId = data.player1 === currentUser.uid ? data.player2 : data.player1;
-  await db.collection('matches').doc(currentMatchId).update({
-    lastQuestion: q, status: 'answering', turn: oppId
-  });
-  document.getElementById('myTypedQuestion').value = '';
-}
-
-async function sendAnswerToOpponent() {
-  const a = document.getElementById('myTypedAnswer').value.trim();
-  if (!a) { toast('⚠️ اكتب إجابتك أولاً', 'error'); return; }
-  const snap = await db.collection('matches').doc(currentMatchId).get();
-  const data = snap.data();
-  const oppId = data.player1 === currentUser.uid ? data.player2 : data.player1;
-  await db.collection('matches').doc(currentMatchId).update({
-    lastAnswer: a, status: 'judging', turn: oppId
-  });
-  document.getElementById('myTypedAnswer').value = '';
-}
-
-async function voteResult(isCorrect) {
-  const matchRef = db.collection('matches').doc(currentMatchId);
-  const snap = await matchRef.get();
-  const data = snap.data();
-  const isP1 = data.player1 === currentUser.uid;
-  const oppId = isP1 ? data.player2 : data.player1;
-  const newRounds = (data.rounds || 0) + 1;
-
-  const update = { status: newRounds >= 5 ? 'finished' : 'asking', turn: oppId, rounds: newRounds };
-
-  if (isCorrect) {
-    // The one who answered correctly gets the point (the opponent of the judge)
-    if (isP1) update.p2Score = (data.p2Score || 0) + 10;
-    else      update.p1Score = (data.p1Score || 0) + 10;
+    document.getElementById('arenaWins').textContent = userProfile.arenaWins||0;
+    document.getElementById('arenaRating').textContent = userProfile.arenaRating||1000;
+    saveProfile();
+    showToast(won?'🏆 انتصرت!':'😤 حاول مرة أخرى!');
+    setTimeout(()=>{ document.getElementById('arenaGame').style.display='none'; document.getElementById('arenaLobby').style.display='block'; },2500);
+    return;
   }
-
-  await matchRef.update(update);
-
-  // Award XP to current user for judging
-  studentData.xp = (studentData.xp || 0) + 5;
-  studentData.levelNum = Math.floor(studentData.xp / 100) + 1;
-  if (currentUser) db.collection('users').doc(currentUser.uid).update({ xp: studentData.xp, levelNum: studentData.levelNum }).catch(()=>{});
-}
-
-async function endDuel(data, isP1) {
-  if (matchListener) { matchListener(); matchListener = null; }
-  const myScore  = isP1 ? data.p1Score : data.p2Score;
-  const oppScore = isP1 ? data.p2Score : data.p1Score;
-  const panel    = document.getElementById('duelResultPanel');
-
-  ['questionCreator','answerReceiver','judgePanel'].forEach(id => document.getElementById(id).style.display = 'none');
-  document.getElementById('duelWaitStatus').textContent = '';
-  panel.style.display = 'block';
-
-  let emoji, text, sub;
-  if (myScore > oppScore) {
-    emoji = '🏆'; text = 'فزت! أحسنت!'; sub = `${myScore} vs ${oppScore} نقطة`;
-    studentData.xp = (studentData.xp || 0) + 30;
-  } else if (myScore < oppScore) {
-    emoji = '😤'; text = 'خسرت المرة هذي!'; sub = `${myScore} vs ${oppScore} — حاول مرة أخرى`;
-    studentData.xp = (studentData.xp || 0) + 10;
-  } else {
-    emoji = '🤝'; text = 'تعادل!'; sub = `${myScore} نقطة لكليكم`;
-    studentData.xp = (studentData.xp || 0) + 15;
-  }
-
-  studentData.levelNum = Math.floor(studentData.xp / 100) + 1;
-  document.getElementById('duelResultEmoji').textContent = emoji;
-  document.getElementById('duelResultText').textContent  = text;
-  document.getElementById('duelResultSub').textContent   = sub;
-
-  // Save XP
-  try {
-    await db.collection('users').doc(currentUser.uid).update({
-      xp: studentData.xp, levelNum: studentData.levelNum
-    });
-    loadLeaderboard();
-  } catch(e) {}
-
-  // Archive match
-  try {
-    await db.collection('matches').doc(currentMatchId).update({ status: 'finished' });
-  } catch(e) {}
-
-  currentMatchId = null;
-}
-
-async function cancelDuel() {
-  // Remove from waiting room
-  if (currentUser) {
-    try { await db.collection('waitingRoom').doc(currentUser.uid).delete(); } catch(e) {}
-  }
-  if (matchListener) { matchListener(); matchListener = null; }
-  if (currentMatchId) {
-    try { await db.collection('matches').doc(currentMatchId).update({ status: 'cancelled' }); } catch(e) {}
-    currentMatchId = null;
-  }
-  document.getElementById('duelOverlay').style.display = 'none';
-  document.getElementById('findMatchBtn').disabled = false;
-  document.getElementById('duelStatusMsg').textContent = '';
-}
-
-// ============================================================
-// MIZAN ANIMATION
-// ============================================================
-function animateMizanFeatures() {
-  document.querySelectorAll('.mizan-feat').forEach((f, i) => {
-    f.classList.remove('visible');
-    setTimeout(() => f.classList.add('visible'), i * 120 + 60);
-  });
-}
-
-// ============================================================
-// DATA PERSISTENCE
-// ============================================================
-async function loadSavedData() {
-  if (!currentUser) return;
-  try {
-    const doc = await db.collection('users').doc(currentUser.uid).get();
-    if (doc.exists) {
-      const data = doc.data();
-      // Merge carefully
-      studentData = {
-        name:             data.name             || '',
-        level:            data.level            || '',
-        sleepHours:       data.sleepHours       || 8,
-        learningStyle:    data.learningStyle    || 'flexible',
-        subjects:         data.subjects         || [],
-        timeAvailability: data.timeAvailability || {},
-        savedSchedule:    data.savedSchedule    || [],
-        sessionDone:      data.sessionDone      || {},
-        xp:               data.xp               || 0,
-        levelNum:         data.levelNum         || 1
-      };
-
-      // Populate step 1 fields
-      if (studentData.name) {
-        document.getElementById('studentName').value  = studentData.name;
-        document.getElementById('setupPageTitle').textContent = 'أهلاً ' + studentData.name;
-      }
-      if (studentData.level) document.getElementById('studyLevel').value = studentData.level;
-
-      renderSubjects();
-      renderXpBar();
-
-      // If schedule exists, go to schedule page
-      if (studentData.savedSchedule.length > 0) {
-        goPage('pageSchedule');
-      }
+  const q = qs[arenaState.qIndex];
+  document.getElementById('qNum').textContent = arenaState.qIndex+1;
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('qOptions').innerHTML = q.opts.map((o,i)=>
+    `<div class="q-opt" onclick="answerSolo(${i},${q.ans})">${o}</div>`
+  ).join('');
+  arenaState.qTimer = 10;
+  clearInterval(arenaState.timer);
+  const tb = document.getElementById('qTimerBadge');
+  arenaState.timer = setInterval(() => {
+    arenaState.qTimer--;
+    tb.textContent = arenaState.qTimer+'s';
+    tb.className = 'q-timer-badge'+(arenaState.qTimer<=3?' urgent':'');
+    if(arenaState.qTimer<=0) {
+      clearInterval(arenaState.timer);
+      arenaState.p2++;
+      document.getElementById('player2Score').textContent = arenaState.p2;
+      setTimeout(()=>{ arenaState.qIndex++; loadSoloQ(); },700);
     }
-  } catch(e) {
-    console.error('Load data error:', e);
-  }
-
-  // Always init time grid with saved data
-  initTimeGrid();
+  },1000);
 }
 
-// ============================================================
-// TOAST
-// ============================================================
-let toastTimer = null;
-function toast(msg, type = '') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show' + (type ? ' ' + type : '');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.className = ''; }, 3200);
+function answerSolo(chosen, correct) {
+  clearInterval(arenaState.timer);
+  document.querySelectorAll('.q-opt').forEach((el,i)=>{
+    if(i===correct) el.classList.add('correct');
+    else if(i===chosen) el.classList.add('wrong');
+    el.style.pointerEvents='none';
+  });
+  if(chosen===correct) { arenaState.p1++; document.getElementById('player1Score').textContent=arenaState.p1; spawnConfetti(); }
+  else { arenaState.p2++; document.getElementById('player2Score').textContent=arenaState.p2; }
+  setTimeout(()=>{ arenaState.qIndex++; loadSoloQ(); },900);
 }
 
-// ============================================================
-// INIT
-// ============================================================
-// Init time grid (will be empty until auth)
-initTimeGrid();
+// ══════════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════════
+function goPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n =>
+    n.classList.toggle('active', n.dataset.page===pageId)
+  );
+  window.scrollTo(0,0);
+  if(pageId==='pageGroup') { document.getElementById('groupNotif').style.display='none'; }
+  if(pageId==='pageMizan') updateMizan();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+function spawnConfetti() {
+  const emojis = ['⭐','✨','🌟','💫','🎉','🏆'];
+  const el = document.createElement('div');
+  el.className = 'confetti';
+  el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+  el.style.left = Math.random()*90 + 5 + 'vw';
+  el.style.top = Math.random()*40 + 10 + 'vh';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1600);
+}
+
+// ── INIT ──
+updatePomUI();
 </script>
 
 </body>
