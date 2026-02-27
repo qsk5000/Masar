@@ -870,7 +870,7 @@ color:var(--gold); letter-spacing:8px; text-shadow:0 0 60px rgba(212,175,55,0.4)
         </div>
       </div>
 
-```
+
   <div class="invite-code-box" id="myInviteCode" onclick="copyCode()">MAS-XXXX</div>
   <div style="text-align:center; font-size:11px; color:var(--muted); margin-top:6px; margin-bottom:16px">
     اضغط لنسخ كود الدعوة
@@ -948,7 +948,7 @@ color:var(--gold); letter-spacing:8px; text-shadow:0 0 60px rgba(212,175,55,0.4)
     <button class="chat-send-btn" onclick="sendChat()"><i class="ri-send-plane-fill"></i></button>
   </div>
 </div>
-```
+
 
   </div>
 
@@ -1109,6 +1109,7 @@ color:var(--gold); letter-spacing:8px; text-shadow:0 0 60px rgba(212,175,55,0.4)
 </div>
 
 <!-- ══════════════════════════════ FIREBASE ══════════════════════════════ -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 
@@ -1222,11 +1223,10 @@ auth.onAuthStateChanged(user => {
     currentUser = user;
     document.getElementById('authOverlay').style.display = 'none';
     document.getElementById('bottomNav').style.display = 'flex';
-    loadUserData(user.uid);
-    initGroupRoom();
-    
-    // ✅ أضفنا هذا السطر:
-    showInstagramPopupOnce();
+    loadUserData(user.uid).then(() => {
+      initGroupRoom();
+      showInstagramPopupOnce();
+    });
   } else {
     document.getElementById('authOverlay').style.display = 'flex';
     document.getElementById('bottomNav').style.display = 'none';
@@ -1312,12 +1312,11 @@ async function loadUserData(uid) {
       document.getElementById('arenaWins').textContent = userProfile.arenaWins || 0;
       document.getElementById('arenaRating').textContent = userProfile.arenaRating || 1000;
       document.getElementById('arenaRatingDisplay').textContent = 'التقييم: ' + (userProfile.arenaRating || 1000);
-      
-      // ✅ أضفنا هذا السطر:
       checkRefreshSchedule();
     }
   } catch(e) { console.error(e); }
 }
+
 
 // ✅ أضفنا هذه الدالة الجديدة كاملة:
 async function checkRefreshSchedule() {
@@ -1326,8 +1325,10 @@ async function checkRefreshSchedule() {
     if (userProfile.schedule && userProfile.schedule.length > 0) {
       const times = ['04:30','06:00','08:00','10:00','12:30','15:00','17:00','19:00','21:00'];
       const subjects = userProfile.subjects;
-      const sorted = [...subjects].sort((a,b) => b.diff - a.diff);
-      
+
+      // ✅ خلط عشوائي مع مراعاة الصعوبة
+      const sorted = [...subjects].sort(() => Math.random() - 0.5);
+
       const tasks = [];
       for (let i = 0; i < Math.min(6, times.length); i++) {
         const subj = sorted[i % sorted.length];
@@ -1347,18 +1348,24 @@ async function checkRefreshSchedule() {
   }
 }
 
-
 async function saveProfile() {
   if(!currentUser) return;
   userProfile.name = document.getElementById('studentName').value.trim();
   userProfile.peakTime = document.getElementById('peakTime').value;
   userProfile.dailyGoal = parseInt(document.getElementById('dailyGoal').value);
   userProfile.totalHours = parseInt(document.getElementById('totalHours').textContent) || 0;
+
+  // ✅ اسم الغرفة
+  if(userProfile.name) {
+    document.getElementById('myRoomName').textContent = `غرفة ${userProfile.name}`;
+  }
+
   try {
     await db.collection('users').doc(currentUser.uid).set(userProfile, { merge:true });
     showToast('💾 تم الحفظ بنجاح');
   } catch(e) { showToast('❌ فشل الحفظ'); }
 }
+
 
 // ══════════════════════════════════════════════════════════════════
 // SUBJECTS
@@ -1995,13 +2002,30 @@ async function initGroupRoom() {
   }
   currentRoomId = currentUser.uid;
   document.getElementById('myInviteCode').textContent = code;
+
   await roomRef.update({
     [`members.${currentUser.uid}`]: { name: userProfile.name || 'مجهول', status: 'online' }
   });
+
+  // ✅ الاسم يجي بعد ما تحمل البيانات
+  document.getElementById('myRoomName').textContent = `غرفة ${userProfile.name || 'الدراسية'}`;
+
+  await db.collection('users').doc(currentUser.uid).update({ activeRoomId: currentUser.uid });
+
+  try {
+    const rtdb = firebase.database();
+    const presenceRef = rtdb.ref(`presence/${currentUser.uid}`);
+    presenceRef.set({ online: true });
+    presenceRef.onDisconnect().remove().then(() => {
+      db.collection('rooms').doc(currentRoomId).update({
+        [`members.${currentUser.uid}`]: firebase.firestore.FieldValue.delete()
+      });
+    });
+  } catch(e) { console.log('Realtime DB غير مفعل:', e); }
+
   listenToRoom(currentUser.uid);
   updateRoomControlsVisibility();
 }
-
 
 function listenToRoom(roomId) {
   currentRoomId = roomId;
@@ -2028,8 +2052,9 @@ function listenToRoom(roomId) {
     focusModeActive = isOn;
   });
 
+  // ✅ آخر 50 رسالة بس
   db.collection('rooms').doc(roomId).collection('chat')
-    .orderBy('time', 'asc').onSnapshot(snap => {
+    .orderBy('time', 'asc').limitToLast(50).onSnapshot(snap => {
       const msgs = [];
       snap.forEach(d => msgs.push(d.data()));
       renderChatLive(msgs);
@@ -2160,23 +2185,48 @@ function shareRoom() {
   if(navigator.share) navigator.share({ title:'Masar Room', text:'انضم لغرفتي: '+code });
   else copyCode();
 }
-
 async function joinRoom() {
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   if (!code) return showToast('⚠️ أدخل الكود');
+
   const snap = await db.collection('rooms').where('code', '==', code).limit(1).get();
   if (snap.empty) return showToast('❌ الغرفة غير موجودة');
+
   const roomDoc = snap.docs[0];
   const roomId = roomDoc.id;
   const members = roomDoc.data().members || {};
+
+  // ── تحقق: هل الطالب موجود بغرفة ثانية؟ ──
+  const userDoc = await db.collection('users').doc(currentUser.uid).get();
+  const activeRoom = userDoc.data()?.activeRoomId;
+
+  if (activeRoom && activeRoom !== roomId) {
+    // اخرج من الغرفة الحالية أول
+    await db.collection('rooms').doc(activeRoom).update({
+      [`members.${currentUser.uid}`]: firebase.firestore.FieldValue.delete()
+    });
+    showToast('👋 خرجت من غرفتك السابقة');
+  }
+
+  if (members[currentUser.uid] && activeRoom === roomId) {
+    return showToast('⚠️ أنت موجود في الغرفه ');
+  }
+
   if (Object.keys(members).length >= 8) return showToast('⚠️ الغرفة ممتلئة (8/8)');
+
+  // انضم للغرفة الجديدة
   await roomDoc.ref.update({
     [`members.${currentUser.uid}`]: { name: userProfile.name || 'ضيف', status: 'online' }
   });
+
+  // سجل الغرفة النشطة على الملف الشخصي
+  await db.collection('users').doc(currentUser.uid).update({ activeRoomId: roomId });
+
   showToast('🚀 انضممت لـ ' + code);
   listenToRoom(roomId);
   updateRoomControlsVisibility();
 }
+
 
 function joinPublicRoom(code) {
   document.getElementById('joinCode').value = code;
