@@ -1136,13 +1136,22 @@ const auth = firebase.auth();
 // STATE
 // ══════════════════════════════════════════════════════════════════
 let currentUser = null;
-let authMode = 'login';
 let currentLang = 'ar';
+let authMode = 'login';
+
 let userProfile = {
   name:'', subjects:[], schedule:[], streak:0,
   completedTasks:0, totalHours:0, arenaWins:0, arenaRating:1000,
-  mizanGroups:0, dailyGoal:4
+  mizanGroups:0, dailyGoal:4,
+  // الجديد:
+  scheduleByDay: {},
+  dailyStats: {},
+  currentStreak: 0,
+  bestStreak: 0,
+  lastActiveDate: null,
+  totalTasksAllTime: 0
 };
+
 let currentRoomId = null;
 let sessionRunning = false;
 let sessionSeconds = 0;
@@ -1299,9 +1308,41 @@ async function loadUserData(uid) {
       document.getElementById('arenaWins').textContent = userProfile.arenaWins || 0;
       document.getElementById('arenaRating').textContent = userProfile.arenaRating || 1000;
       document.getElementById('arenaRatingDisplay').textContent = 'التقييم: ' + (userProfile.arenaRating || 1000);
+      
+      // ✅ أضفنا هذا السطر:
+      checkRefreshSchedule();
     }
   } catch(e) { console.error(e); }
 }
+
+// ✅ أضفنا هذه الدالة الجديدة كاملة:
+async function checkRefreshSchedule() {
+  const today = getTodayStr();
+  if (!userProfile.scheduleByDay[today]) {
+    if (userProfile.schedule && userProfile.schedule.length > 0) {
+      const times = ['04:30','06:00','08:00','10:00','12:30','15:00','17:00','19:00','21:00'];
+      const subjects = userProfile.subjects;
+      const sorted = [...subjects].sort((a,b) => b.diff - a.diff);
+      
+      const tasks = [];
+      for (let i = 0; i < Math.min(6, times.length); i++) {
+        const subj = sorted[i % sorted.length];
+        tasks.push({
+          time: times[i],
+          subject: subj.name,
+          difficulty: subj.diff,
+          done: false,
+          startedAt: null,
+          completedAt: null,
+          duration: 0,
+          attempts: 0
+        });
+      }
+      userProfile.scheduleByDay[today] = tasks;
+    }
+  }
+}
+
 
 async function saveProfile() {
   if(!currentUser) return;
@@ -1378,81 +1419,273 @@ function generateAISchedule() {
       subject: sorted[(i + ti) % sorted.length].name,
       typeAr: typesAr[ti % typesAr.length],
       typeEn: typesEn[ti % typesEn.length],
-      done: false
+      done: false,
+      startedAt: null,
+      completedAt: null,
+      duration: 0,
+      attempts: 0
     }));
     return { dayAr, dayEn:daysEn[i], tasks };
   });
 
   userProfile.schedule = schedule;
+  
+  // خزن الجدول في scheduleByDay
+  const today = getTodayStr();
+  const todayIndex = new Date().getDay();
+  const todayScheduleIndex = todayIndex === 0 ? 6 : todayIndex - 1;
+  if (schedule[todayScheduleIndex]) {
+    userProfile.scheduleByDay[today] = JSON.parse(JSON.stringify(schedule[todayScheduleIndex].tasks));
+  }
+  
   renderSchedule();
   saveProfile();
   setTimeout(() => goPage('pageSchedule'), 300);
 }
 
+function refreshSchedule() {
+  const today = getTodayStr();
+  let tasks = userProfile.scheduleByDay[today];
+  
+  if (!tasks) {
+    tasks = (userProfile.schedule[0]?.tasks || []);
+  }
+
+  const done = tasks.filter(t => t.done).length;
+  const total = tasks.length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  const duration = tasks.reduce((a,t) => a + (t.duration || 0), 0);
+  const hours = Math.round(duration / 3600000 * 10) / 10;
+
+  // Save stats
+  userProfile.dailyStats[today] = { done, total, pct, duration };
+  userProfile.totalTasksAllTime = (userProfile.totalTasksAllTime || 0) + done;
+
+  // Update streak
+  if (pct >= 50 && total > 0) {
+    const yesterday = new Date(); 
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    if (userProfile.lastActiveDate === yesterdayStr) {
+      userProfile.currentStreak++;
+    } else {
+      userProfile.currentStreak = 1;
+    }
+    
+    if (userProfile.currentStreak > userProfile.bestStreak) {
+      userProfile.bestStreak = userProfile.currentStreak;
+    }
+    
+    userProfile.lastActiveDate = today;
+  }
+
+  // Clear and regenerate
+  delete userProfile.scheduleByDay[today];
+  
+  if (userProfile.schedule && userProfile.schedule.length > 0) {
+    // Generate using old logic
+    const times = ['04:30','06:00','08:00','10:00','12:30','15:00','17:00','19:00','21:00'];
+    const subjects = userProfile.subjects;
+    const sorted = [...subjects].sort((a,b) => b.diff - a.diff);
+    
+    const tasks = [];
+    for (let i = 0; i < Math.min(6, times.length); i++) {
+      const subj = sorted[i % sorted.length];
+      tasks.push({
+        time: times[i],
+        subject: subj.name,
+        difficulty: subj.diff,
+        done: false,
+        startedAt: null,
+        completedAt: null,
+        duration: 0,
+        attempts: 0
+      });
+    }
+    userProfile.scheduleByDay[today] = tasks;
+  }
+
+  renderSchedule();
+  saveProfile();
+
+  // Show summary
+  document.getElementById('summaryDone').textContent = done;
+  document.getElementById('summaryHours').textContent = hours + 'h';
+  document.getElementById('summaryPercentage').textContent = pct + '%';
+  document.getElementById('summaryStreak').textContent = userProfile.currentStreak + '🔥';
+  document.getElementById('refreshModal').classList.add('show');
+}
+
+function closeRefreshModal() {
+  document.getElementById('refreshModal').classList.remove('show');
+  showToast('🎉 جدول جديد جاهز!');
+}
 function renderSchedule() {
   const c = document.getElementById('scheduleContainer');
-  const today = new Date().getDay();
-  const todayIndex = today === 0 ? 6 : today - 1;
-
-  c.innerHTML = (userProfile.schedule || []).map((day, di) => `
-    <div class="card${di === todayIndex ? ' card-glow' : ''}" style="position:relative">
-      ${di === todayIndex ? '<span class="badge badge-live" style="position:absolute;top:14px;inset-inline-end:14px">اليوم</span>' : ''}
-      <h4 style="color:var(--gold); font-family:var(--font-display); border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:14px;">
-        ${currentLang==='ar' ? day.dayAr : day.dayEn}
-      </h4>
-      ${(day.tasks || []).map((t, ti) => `
-        <div class="task-item${t.done?' done':''}">
-          <div class="task-time">${t.time}</div>
-          <div class="task-info">
-            <div class="task-subj">${t.subject}</div>
-            <div class="task-type">${currentLang==='ar'?t.typeAr:t.typeEn}</div>
-          </div>
-          <button class="task-done-btn" onclick="toggleTask(${di},${ti})">
-            ${t.done ? '<i class="ri-check-line"></i>' : ''}
-          </button>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-
-  if(userProfile.name) {
-    document.getElementById('welcomeMsg').textContent =
-      (currentLang==='ar'?'خطة ':'Plan of ') + userProfile.name;
+  
+  if(!userProfile.schedule || userProfile.schedule.length === 0) {
+    c.innerHTML = '<div class="card"><p style="color:var(--muted); text-align:center; padding:40px;">⚠️ ما في جدول بعد<br>اضغط "توليد الجدول" أولاً</p></div>';
+    return;
   }
+
+  const today = new Date();
+  const todayStr = getTodayStr();
+  const daysAr = ['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+  
+  // اليوم الحالي هو الفهرس الصحيح
+  const todayDayOfWeek = today.getDay();
+  const todayScheduleIndex = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
+
+  // نعرض من اليوم الحالي لمدة 7 أيام
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const scheduleIndex = (todayScheduleIndex + i) % 7;
+    const day = userProfile.schedule[scheduleIndex];
+    
+    if (!day) continue;
+    
+    // حساب التاريخ الفعلي
+    const displayDate = new Date(today);
+    displayDate.setDate(displayDate.getDate() + i);
+    const dateStr = displayDate.toISOString().split('T')[0];
+    const isToday = dateStr === todayStr;
+    
+    // جيب المهام
+    let tasks = userProfile.scheduleByDay[dateStr] || day.tasks || [];
+    const done = tasks.filter(t => t && t.done).length;
+    const total = tasks.length;
+    const percentage = total ? Math.round(done / total * 100) : 0;
+    
+    // صيغة التاريخ الحقيقية
+    const dateDisplay = displayDate.toLocaleDateString('ar-SA', { 
+      day: 'numeric', 
+      month: 'long',
+      weekday: 'long'
+    });
+
+    html += `
+      <div class="card${isToday ? ' card-glow' : ''}" style="position:relative;">
+        ${isToday ? '<span class="badge badge-live" style="position:absolute;top:14px;right:14px;">اليوم 📍</span>' : ''}
+        <h4 style="color:var(--gold); border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:14px; margin-top:${isToday ? '20px' : '0'};">
+          ${dateDisplay}
+        </h4>
+        ${tasks.map((t, ti) => {
+          if(!t) return '';
+          return `
+            <div class="task-item${t.done ? ' done' : ''}">
+              <div class="task-time">${t.time || '؟'}</div>
+              <div class="task-info">
+                <div class="task-subj">${t.subject || 'بدون عنوان'}</div>
+                <div class="task-type">${t.typeAr || 'عادي'}</div>
+                <div class="task-meta" style="font-size:0.7em; color:var(--muted2); margin-top:2px;">
+                  ${t.startedAt ? '⏱ ' + formatTime(t.startedAt) : ''}
+                  ${t.completedAt ? ' • ✅ ' + formatTime(t.completedAt) : ''}
+                  ${t.duration > 0 ? ' • ' + Math.round(t.duration / 60000) + ' دقيقة' : ''}
+                </div>
+              </div>
+              <button class="task-done-btn" onclick="toggleTask(${scheduleIndex},${ti})" style="cursor:pointer;">
+                ${t.done ? '<i class="ri-check-line"></i>' : ''}
+              </button>
+            </div>
+          `;
+        }).join('')}
+        <div style="font-size:0.8em; color:var(--muted); margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+          ${done}/${total} مهام • ${percentage}%
+        </div>
+      </div>
+    `;
+  }
+
+  c.innerHTML = html;
   updateStats();
 }
 
+function formatTime(isoStr) {
+  const d = new Date(isoStr);
+  return d.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+}
+
+
 function toggleTask(di, ti) {
-  userProfile.schedule[di].tasks[ti].done = !userProfile.schedule[di].tasks[ti].done;
-  const done = userProfile.schedule[di].tasks[ti].done;
-  if(done) spawnConfetti();
+  const today = getTodayStr();
+  let tasks = userProfile.scheduleByDay[today];
+  
+  if (!tasks) {
+    // Fallback to old schedule
+    tasks = userProfile.schedule[di].tasks;
+  }
+  
+  const task = tasks[ti];
+  task.done = !task.done;
+  
+  if (task.done) {
+    task.completedAt = new Date().toISOString();
+    if (!task.startedAt) task.startedAt = new Date().toISOString();
+    task.duration = new Date(task.completedAt) - new Date(task.startedAt);
+    spawnConfetti();
+  } else {
+    task.completedAt = null;
+    task.duration = 0;
+  }
+  
+  task.attempts = (task.attempts || 0) + 1;
   renderSchedule();
   saveProfile();
 }
 
+
 function updateStats() {
-  const total = (userProfile.schedule||[]).reduce((a,d) => a+(d.tasks||[]).length, 0);
-  const done  = (userProfile.schedule||[]).reduce((a,d) => a+(d.tasks||[]).filter(t=>t.done).length, 0);
-  const pct   = total ? Math.round(done/total*100) : 0;
+  const today = getTodayStr();
+  const tasks = userProfile.scheduleByDay[today] || [];
+  const done = tasks.filter(t => t.done).length;
+  const total = tasks.length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+
   document.getElementById('todayPct').textContent = pct + '%';
   document.getElementById('todayProg').style.width = pct + '%';
-  const ct = done;
-  const hours = Math.round(ct * 1.5);
-  document.getElementById('completedTasks').textContent = ct;
+  
+  const hours = Math.round(tasks.reduce((a,t) => a + (t.duration || 0), 0) / 3600000 * 10) / 10;
   document.getElementById('totalHours').textContent = hours;
-  document.getElementById('streakNum').textContent = userProfile.streak || 0;
-  const level = Math.floor(done / 5) + 1;
+  document.getElementById('completedTasks').textContent = done;
+  document.getElementById('streakNum').textContent = userProfile.currentStreak || 0;
+  
+  const level = Math.floor(userProfile.totalTasksAllTime / 20) + 1;
   document.getElementById('levelVal').textContent = level;
-  document.getElementById('progressStat').textContent =
-    `${done} / ${total} ${currentLang==='ar'?'مهمة منجزة':'tasks done'}`;
+  document.getElementById('progressStat').textContent = `${done} / ${total} مهمة`;
 
-  if(currentUser) {
-    db.collection('users').orderBy('totalHours','desc').limit(50).get().then(snap => {
-      const idx = snap.docs.findIndex(d => d.id === currentUser.uid);
-      document.getElementById('rankVal').textContent = idx >= 0 ? '#'+(idx+1) : '–';
-    }).catch(()=>{});
-  }
+  updateStreak();
   updateMizan();
+}
+
+function updateStreak() {
+  const today = getTodayStr();
+  const tasks = userProfile.scheduleByDay[today] || [];
+  const total = tasks.length;
+  const done = tasks.filter(t => t.done).length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+
+  if (pct >= 50 && total > 0) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    if (userProfile.lastActiveDate === yesterdayStr) {
+      userProfile.currentStreak = (userProfile.currentStreak || 0) + 1;
+    } else {
+      userProfile.currentStreak = 1;
+    }
+
+    if (userProfile.currentStreak > userProfile.bestStreak) {
+      userProfile.bestStreak = userProfile.currentStreak;
+    }
+
+    userProfile.lastActiveDate = today;
+  }
+}
+
+function getTodayStr() {
+  return new Date().toISOString().split('T')[0];
 }
 
 function updateMizan() {
@@ -1468,7 +1701,10 @@ function updateMizan() {
 
   // Subject progress bars
   const c = document.getElementById('subjectProgress');
-  if(!userProfile.subjects?.length) { c.innerHTML='<p style="color:var(--muted);font-size:0.85em">لا توجد مواد</p>'; return; }
+  if(!userProfile.subjects?.length) { 
+    c.innerHTML='<p style="color:var(--muted);font-size:0.85em">لا توجد مواد</p>'; 
+    return;
+  }
   c.innerHTML = userProfile.subjects.map(s => {
     const subjTasks = (userProfile.schedule||[]).reduce((acc,d) =>
       acc + d.tasks.filter(t => t.subject===s.name && t.done).length, 0);
@@ -1485,6 +1721,157 @@ function updateMizan() {
       </div>`;
   }).join('');
 }
+// ✅ تحقق من انتهاء الأسبوع
+function checkWeekCompletion() {
+  const today = new Date();
+  const todayStr = getTodayStr();
+  const lastCheckStr = localStorage.getItem('lastWeekCheck') || '1970-01-01';
+  const lastCheck = new Date(lastCheckStr);
+  
+  if ((today - lastCheck) >= 7 * 24 * 60 * 60 * 1000) {
+    saveWeeklyStats();
+    showWeeklySummary();
+    generateNewWeek();
+    localStorage.setItem('lastWeekCheck', todayStr);
+  }
+}
+
+function saveWeeklyStats() {
+  const weekStats = {
+    weekStartDate: new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0],
+    weekEndDate: getTodayStr(),
+    totalCompleted: 0,
+    totalTasks: 0,
+    percentage: 0,
+    dailyBreakdown: {},
+    averageHours: 0,
+    currentStreak: userProfile.currentStreak || 0
+  };
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const stat = userProfile.dailyStats[dateStr];
+    
+    if (stat) {
+      weekStats.totalCompleted += stat.done;
+      weekStats.totalTasks += stat.total;
+      weekStats.dailyBreakdown[dateStr] = {
+        done: stat.done,
+        total: stat.total,
+        percentage: stat.pct,
+        hours: Math.round(stat.duration / 3600000 * 10) / 10
+      };
+    }
+  }
+
+  weekStats.percentage = weekStats.totalTasks > 0 
+    ? Math.round(weekStats.totalCompleted / weekStats.totalTasks * 100)
+    : 0;
+  
+  weekStats.averageHours = Object.values(weekStats.dailyBreakdown)
+    .reduce((a, d) => a + (d.hours || 0), 0) / 7;
+
+  userProfile.weeklySummaries = userProfile.weeklySummaries || [];
+  userProfile.weeklySummaries.push(weekStats);
+  saveProfile();
+  return weekStats;
+}
+
+function showWeeklySummary() {
+  const stats = saveWeeklyStats();
+  const modal = document.createElement('div');
+  modal.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:9999;`;
+  
+  const content = document.createElement('div');
+  content.style.cssText = `background:var(--card);border:1px solid var(--border-gold);border-radius:24px;padding:40px;max-width:500px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.8);`;
+
+  const daysAr = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const weekStart = new Date(stats.weekStartDate);
+  const weekEnd = new Date(stats.weekEndDate);
+  
+  const dailyBreakdownHtml = Object.entries(stats.dailyBreakdown).map(([date, data]) => {
+    const d = new Date(date);
+    const dayName = daysAr[d.getDay()];
+    return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.9em;"><span>${dayName}</span><span style="color:var(--gold);">${data.percentage}% (${data.done}/${data.total})</span><span style="color:var(--muted);">${data.hours}h</span></div>`;
+  }).join('');
+
+  content.innerHTML = `
+    <div style="font-size:3em;margin-bottom:16px;">🎉</div>
+    <h2 style="font-family:var(--font-display);color:var(--gold);font-size:1.8em;margin-bottom:8px;">أسبوع رائع!</h2>
+    <p style="color:var(--muted);margin-bottom:24px;font-size:1em;">من ${weekStart.toLocaleDateString('ar-SA')} إلى ${weekEnd.toLocaleDateString('ar-SA')}</p>
+    <div style="background:rgba(212,175,55,0.1);border-radius:16px;padding:20px;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div><div style="font-size:2em;color:var(--gold);font-weight:700;">${stats.percentage}%</div><div style="font-size:0.85em;color:var(--muted);">إنجاز الأسبوع</div></div>
+        <div><div style="font-size:2em;color:var(--gold);font-weight:700;">${stats.totalCompleted}/${stats.totalTasks}</div><div style="font-size:0.85em;color:var(--muted);">مهام منجزة</div></div>
+        <div><div style="font-size:2em;color:var(--gold);font-weight:700;">${Math.round(stats.averageHours * 10) / 10}h</div><div style="font-size:0.85em;color:var(--muted);">متوسط يومي</div></div>
+        <div><div style="font-size:2em;color:var(--gold);font-weight:700;">🔥${stats.currentStreak}</div><div style="font-size:0.85em;color:var(--muted);">ستريك</div></div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;margin-bottom:20px;max-height:250px;overflow-y:auto;">
+      <h4 style="color:var(--gold);margin-bottom:12px;font-weight:700;">تفصيل يومي:</h4>
+      ${dailyBreakdownHtml}
+    </div>
+    ${stats.percentage >= 80 ? '<div style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:12px;margin-bottom:20px;color:#34D399;">⭐ ممتاز جداً! أنت من أفضل الطلاب!</div>' : stats.percentage >= 60 ? '<div style="background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.3);border-radius:12px;padding:12px;margin-bottom:20px;color:var(--gold);">👏 أداء جيد! استمر على هذا الحال!</div>' : '<div style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px;margin-bottom:20px;color:#A78BFA;">💪 بداية جيدة! حاول أكثر الأسبوع الجاي!</div>'}
+    <button onclick="this.parentElement.parentElement.remove()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:var(--ink);border:none;border-radius:13px;font-weight:900;cursor:pointer;font-family:var(--font-ar);font-size:1em;transition:0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">ابدأ أسبوع جديد! 🚀</button>
+  `;
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+}
+
+function generateNewWeek() {
+  userProfile.schedule = [];
+  userProfile.scheduleByDay = {};
+  generateAISchedule();
+  showToast('🎉 أسبوع جديد! ابدأ من جديد 💪');
+}
+
+function showWeeklyHistory() {
+  if (!userProfile.weeklySummaries || userProfile.weeklySummaries.length === 0) {
+    showToast('⚠️ لا توجد أسابيع سابقة بعد');
+    return;
+  }
+
+  const modal = document.createElement('div');
+  modal.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:9999;`;
+  
+  const content = document.createElement('div');
+  content.style.cssText = `background:var(--card);border:1px solid var(--border-gold);border-radius:24px;padding:40px;max-width:600px;max-height:80vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.8);`;
+
+  const weeksHtml = userProfile.weeklySummaries.map((week, idx) => `
+    <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;margin-bottom:12px;border-left:3px solid var(--gold);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-weight:700;color:var(--gold);">الأسبوع ${userProfile.weeklySummaries.length - idx}</div>
+        <div style="font-size:1.2em;font-weight:700;color:var(--gold);">${week.percentage}%</div>
+      </div>
+      <div style="font-size:0.85em;color:var(--muted);margin-bottom:8px;">
+        ${new Date(week.weekStartDate).toLocaleDateString('ar-SA')} - ${new Date(week.weekEndDate).toLocaleDateString('ar-SA')}
+      </div>
+      <div style="display:flex;gap:16px;font-size:0.85em;">
+        <span>✅ ${week.totalCompleted}/${week.totalTasks}</span>
+        <span>⏱ ${Math.round(week.averageHours * 10) / 10}h</span>
+        <span>🔥${week.currentStreak}</span>
+      </div>
+    </div>
+  `).join('');
+
+  content.innerHTML = `
+    <h2 style="font-family:var(--font-display);color:var(--gold);font-size:1.8em;margin-bottom:20px;">سجل الأسابيع 📊</h2>
+    ${weeksHtml}
+    <button onclick="this.parentElement.parentElement.remove()" style="width:100%;padding:12px;background:rgba(255,255,255,0.1);color:var(--text);border:1px solid var(--border);border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-ar);margin-top:20px;">إغلاق</button>
+  `;
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+}
+
+window.addEventListener('load', () => {
+  setTimeout(checkWeekCompletion, 2000);
+});
 
 // ══════════════════════════════════════════════════════════════════
 // GROUP STUDY
