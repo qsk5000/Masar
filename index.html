@@ -1224,11 +1224,15 @@ auth.onAuthStateChanged(user => {
     document.getElementById('bottomNav').style.display = 'flex';
     loadUserData(user.uid);
     initGroupRoom();
+    
+    // ✅ أضفنا هذا السطر:
+    showInstagramPopupOnce();
   } else {
     document.getElementById('authOverlay').style.display = 'flex';
     document.getElementById('bottomNav').style.display = 'none';
   }
 });
+
 
 function setAuthMode(mode) {
   authMode = mode;
@@ -1872,6 +1876,119 @@ function showWeeklyHistory() {
 window.addEventListener('load', () => {
   setTimeout(checkWeekCompletion, 2000);
 });
+/// ✅ عرض popup الانستجرام مرة واحدة فقط
+function showInstagramPopupOnce() {
+  const hasSeenPopup = localStorage.getItem('instagramPopupShown');
+  if (!hasSeenPopup) {
+    setTimeout(() => showInstagramProfessionalPopup(), 2000);
+    localStorage.setItem('instagramPopupShown', 'true');
+  }
+}
+
+// // ✅ عرض popup الانستجرام مرة واحدة فقط
+function showInstagramPopupOnce() {
+  const hasSeenPopup = localStorage.getItem('instagramPopupShown');
+  if (!hasSeenPopup) {
+    setTimeout(() => showInstagramPremium(), 2500);
+    localStorage.setItem('instagramPopupShown', 'true');
+  }
+}
+
+// // ✅ عرض popup الانستجرام مرة واحدة فقط
+function showInstagramPopupOnce() {
+  const hasSeenPopup = localStorage.getItem('instagramPopupShown');
+  if (!hasSeenPopup) {
+    setTimeout(() => showInstagramProFinal(), 2500);
+    localStorage.setItem('instagramPopupShown', 'true');
+  }
+}
+
+// ✅ Popup احترافي صغير مع شعار انستا الحقيقي
+function showInstagramProFinal() {
+  const modal = document.createElement('div');
+  modal.style.cssText = `position:fixed;bottom:20px;right:20px;z-index:9999;animation:slideInRight 0.5s cubic-bezier(0.34,1.56,0.64,1);`;
+
+  const card = document.createElement('div');
+  card.style.cssText = `background:linear-gradient(135deg,#111520 0%,#0D1018 100%);border:1.5px solid rgba(212,175,55,0.3);border-radius:20px;width:360px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.7),0 0 60px rgba(212,175,55,0.1);backdrop-filter:blur(10px);`;
+
+  card.innerHTML = `
+    <div style="background:linear-gradient(90deg,rgba(212,175,55,0.15) 0%,transparent 100%);border-bottom:1px solid rgba(212,175,55,0.2);padding:16px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="instaGrad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#FD5949;stop-opacity:1"/><stop offset="5%" style="stop-color:#D6249F;stop-opacity:1"/><stop offset="45%" style="stop-color:#285AEB;stop-opacity:1"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="5" fill="url(#instaGrad)"/><circle cx="12" cy="12" r="5" fill="white" stroke="white" stroke-width="1"/><circle cx="17.5" cy="6.5" r="1.2" fill="white"/></svg>
+        <div><div style="font-size:12px;color:var(--muted);font-weight:700;letter-spacing:0.5px;">INSTAGRAM</div><div style="font-size:13px;color:var(--text);font-weight:800;">@mizaniq1</div></div>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" style="background:rgba(255,255,255,0.1);border:none;width:28px;height:28px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:18px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.background='rgba(212,175,55,0.2)';this.style.color='var(--gold)';" onmouseout="this.style.background='rgba(255,255,255,0.1)';this.style.color='var(--muted)';">✕</button>
+    </div>
+
+    <div style="padding:20px;">
+      <h3 style="color:var(--gold);font-family:var(--font-display);font-size:1.3em;font-weight:900;margin:0 0 8px;">تابعنا الآن!</h3>
+      <p style="color:var(--muted);font-size:0.85em;margin:0 0 18px;line-height:1.5;">احصل على نصائح دراسية يومية وشروحات احترافية حصرية على الإنستجرام</p>
+      
+      <div style="margin-bottom:18px;"><div style="display:flex;gap:8px;margin-bottom:8px;font-size:0.8em;"><span style="color:var(--gold);">✓</span><span style="color:var(--muted);">نصائح دراسية يومية</span></div><div style="display:flex;gap:8px;margin-bottom:8px;font-size:0.8em;"><span style="color:var(--gold);">✓</span><span style="color:var(--muted);">تحديات وجوائز أسبوعية</span></div><div style="display:flex;gap:8px;font-size:0.8em;"><span style="color:var(--gold);">✓</span><span style="color:var(--muted);">محتوى حصري وشروحات</span></div></div>
+
+      <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.2);border-radius:12px;padding:10px;text-align:center;margin-bottom:16px;"><div style="color:var(--gold);font-weight:900;font-size:1.2em;">+</div><div style="color:var(--muted);font-size:0.75em;margin-top:2px;">طالب يتابعنا بالفعل</div></div>
+
+      <button onclick="followOnInstagram(this.parentElement.parentElement);" style="width:100%;padding:12px;background:linear-gradient(135deg,#E4405F 0%,#FD1D1D 50%,#F77737 100%);color:white;border:none;border-radius:12px;font-weight:900;cursor:pointer;font-family:var(--font-ar);font-size:0.95em;transition:all 0.3s;box-shadow:0 6px 20px rgba(232,64,95,0.4);display:flex;align-items:center;justify-content:center;gap:8px;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 28px rgba(232,64,95,0.5)';" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 6px 20px rgba(232,64,95,0.4)';">تابع الآن</button>
+    </div>
+
+    <div style="background:rgba(212,175,55,0.04);border-top:1px solid rgba(212,175,55,0.15);padding:10px;text-align:center;font-size:10px;color:var(--muted);font-weight:600;">لا تفوّت آخر التحديثات 📲</div>
+  `;
+
+  modal.appendChild(card);
+  document.body.appendChild(modal);
+
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideInRight { from { opacity:0; transform:translateX(400px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes slideOutRight { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(400px); } }
+  `;
+  document.head.appendChild(style);
+}
+
+// ✅ دالة المتابعة مع التتبع
+function followOnInstagram(cardElement) {
+  window.open('https://www.instagram.com/mizaniq1', '_blank');
+  const parent = cardElement.parentElement;
+  parent.style.animation = 'slideOutRight 0.4s ease forwards';
+  
+  setTimeout(() => {
+    parent.remove();
+    showFollowSuccessNotification();
+    trackFollowerAction();
+  }, 400);
+}
+
+// ✅ إشعار النجاح
+function showFollowSuccessNotification() {
+  const notif = document.createElement('div');
+  notif.style.cssText = `position:fixed;bottom:20px;right:20px;z-index:9999;animation:slideInRight 0.4s ease;`;
+  notif.innerHTML = `<div style="background:linear-gradient(135deg,rgba(16,185,129,0.2) 0%,rgba(16,185,129,0.05) 100%);border:1.5px solid rgba(16,185,129,0.4);border-radius:16px;padding:16px 24px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(16,185,129,0.2);min-width:300px;"><div style="font-size:24px;">✅</div><div><div style="color:#34D399;font-weight:900;font-size:0.9em;">تم المتابعة بنجاح!</div><div style="color:var(--muted);font-size:0.8em;margin-top:2px;">شكراً لك على دعمك للمنصة 💚</div></div></div>`;
+  document.body.appendChild(notif);
+  
+  setTimeout(() => {
+    notif.style.animation = 'slideOutRight 0.4s ease forwards';
+    setTimeout(() => notif.remove(), 400);
+  }, 4000);
+}
+
+// ✅ تتبع المتابعة
+function trackFollowerAction() {
+  const followedCount = localStorage.getItem('instagramFollowedCount') || 0;
+  localStorage.setItem('instagramFollowedCount', parseInt(followedCount) + 1);
+  
+  if (currentUser && db) {
+    try {
+      db.collection('users').doc(currentUser.uid).update({
+        followedInstagram: true,
+        instagramFollowDate: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch(e) {
+      console.log('تتبع:', e);
+    }
+  }
+  
+  showToast('🎉 شكراً على المتابعة');
+}
 
 // ══════════════════════════════════════════════════════════════════
 // GROUP STUDY
