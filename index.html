@@ -638,6 +638,11 @@ color:var(--gold); letter-spacing:8px; text-shadow:0 0 60px rgba(212,175,55,0.4)
 .session-timer-display { font-size:2.2em; letter-spacing:4px; }
 .grid-2 { grid-template-columns:1fr; }
 }
+.page { padding-top:52px; } /* اتركها كما هي لضمان عدم اختفاء محتوى الصفحة تحت البانر */
+#authOverlay { padding-top:36px; }
+#langBar { top:44px; }
+
+
 </style>
 
 </head>
@@ -654,7 +659,21 @@ color:var(--gold); letter-spacing:8px; text-shadow:0 0 60px rgba(212,175,55,0.4)
 <!-- ══════════════════════════════ TOAST ══════════════════════════════ -->
 
 <div id="toast"></div>
-
+<!-- ══════════════════════════════ TOP BANNER ══════════════════════════════ -->
+<div id="topBanner" style="
+  position:fixed; top:0; left:0; right:0; z-index:9999;
+  background:linear-gradient(90deg, #0D1018, #1a1f2e, #0D1018);
+  border-bottom:1px solid rgba(212,175,55,0.3);
+  height:36px; display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+">
+  <div id="bannerFadeText" style="
+    color: #9CA3AF; font-size: 13px; font-weight: 600;
+    transition: opacity 0.8s ease-in-out; /* تنعيم الظهور والاختفاء */
+    opacity: 0; text-align: center; direction: rtl;
+  ">
+  </div>
+</div>
 <!-- ══════════════════════════════ AUTH OVERLAY ══════════════════════════════ -->
 
 <div id="authOverlay">
@@ -864,13 +883,15 @@ color:var(--gold); letter-spacing:8px; text-shadow:0 0 60px rgba(212,175,55,0.4)
           <span style="font-weight:800; font-size:1em" id="myRoomName">غرفتي الدراسية</span>
           <span class="badge badge-live" style="margin-inline-start:8px">🔴 مباشر</span>
         </div>
-        <div style="display:flex; gap:8px">
-          <button class="btn btn-sm btn-secondary btn-icon" onclick="copyCode()" title="نسخ الكود"><i class="ri-file-copy-line"></i></button>
-          <button class="btn btn-sm btn-secondary btn-icon" onclick="shareRoom()" title="مشاركة"><i class="ri-share-line"></i></button>
-        </div>
+    <div style="display:flex; gap:8px">
+  <button class="btn btn-sm btn-secondary btn-icon" onclick="copyCode()" title="نسخ الكود"><i class="ri-file-copy-line"></i></button>
+  <button class="btn btn-sm btn-secondary btn-icon" onclick="shareRoom()" title="مشاركة"><i class="ri-share-line"></i></button>
+  <button class="btn btn-sm btn-danger btn-icon" onclick="leaveRoom()" title="مغادرة الغرفة"><i class="ri-logout-box-line"></i></button>
+</div>
+
       </div>
 
-
+```
   <div class="invite-code-box" id="myInviteCode" onclick="copyCode()">MAS-XXXX</div>
   <div style="text-align:center; font-size:11px; color:var(--muted); margin-top:6px; margin-bottom:16px">
     اضغط لنسخ كود الدعوة
@@ -948,7 +969,7 @@ color:var(--gold); letter-spacing:8px; text-shadow:0 0 60px rgba(212,175,55,0.4)
     <button class="chat-send-btn" onclick="sendChat()"><i class="ri-send-plane-fill"></i></button>
   </div>
 </div>
-
+```
 
   </div>
 
@@ -2232,31 +2253,76 @@ function joinPublicRoom(code) {
   document.getElementById('joinCode').value = code;
   joinRoom();
 }
+async function leaveRoom() {
+  if (!currentUser || !currentRoomId) return;
+
+  // لو صاحب الغرفة ما يقدر يغادر
+  if (isRoomOwner()) {
+    return showToast('⚠️ صاحب الغرفة لا يمكنه المغادرة');
+  }
+
+  try {
+    // احذف من الغرفة
+    await db.collection('rooms').doc(currentRoomId).update({
+      [`members.${currentUser.uid}`]: firebase.firestore.FieldValue.delete()
+    });
+
+    // امسح الغرفة النشطة
+    await db.collection('users').doc(currentUser.uid).update({
+      activeRoomId: firebase.firestore.FieldValue.delete()
+    });
+
+    // ارجع لغرفته الأصلية
+    currentRoomId = currentUser.uid;
+    listenToRoom(currentUser.uid);
+    updateRoomControlsVisibility();
+
+    showToast('👋 غادرت الغرفة');
+    groupTab('myRoom');
+  } catch(e) {
+    showToast('❌ حدث خطأ');
+  }
+}
 
 async function renderPublicRooms() {
   const c = document.getElementById('publicRoomsList');
   c.innerHTML = '<div class="empty-state"><div class="loading-spin"></div></div>';
   try {
-    const snap = await db.collection('rooms').limit(10).get();
+    const snap = await db.collection('rooms').limit(20).get();
     if(snap.empty) {
       c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏠</div><div class="empty-state-text">لا توجد غرف متاحة حالياً</div></div>';
       return;
     }
-    c.innerHTML = snap.docs.map(d => {
+
+    // ✅ فلتر الغرف المتاحة فقط (أقل من 8 أعضاء)
+    const availableRooms = snap.docs.filter(d => {
+      const members = d.data().members || {};
+      return Object.keys(members).length < 8;
+    });
+
+    if(availableRooms.length === 0) {
+      c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">😔</div><div class="empty-state-text">كل الغرف ممتلئة حالياً<br>حاول لاحقاً</div></div>';
+      return;
+    }
+
+    c.innerHTML = availableRooms.map(d => {
       const r = d.data();
-      const count = Object.keys(r.members||{}).length;
+      const count = Object.keys(r.members || {}).length;
       return `
         <div class="room-item">
           <div class="room-icon"><i class="ri-door-open-line"></i></div>
           <div style="flex:1; min-width:0">
-            <div style="font-weight:800; color:var(--gold); font-family:var(--font-mono)">${r.code||'–'}</div>
-            <div style="font-size:11px; color:var(--muted); margin-top:2px">${count} أعضاء • ${count<8?'متاحة':'ممتلئة'}</div>
+            <div style="font-weight:800; color:var(--gold); font-family:var(--font-mono)">${r.code || '–'}</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:2px">${count} / 8 أعضاء • متاحة</div>
           </div>
-          ${count < 8 ? `<button class="btn btn-sm btn-purple-solid" onclick="joinPublicRoom('${r.code}')">انضمام</button>` : '<span class="badge badge-rose">ممتلئة</span>'}
+          <button class="btn btn-sm btn-purple-solid" onclick="joinPublicRoom('${r.code}')">انضمام</button>
         </div>`;
     }).join('');
-  } catch(e) { c.innerHTML = '<div class="empty-state"><div class="empty-state-text" style="color:var(--rose)">خطأ في التحميل</div></div>'; }
+  } catch(e) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-text" style="color:var(--rose)">خطأ في التحميل</div></div>';
+  }
 }
+
 
 async function renderLeaderboard() {
   const c = document.getElementById('leaderboardList');
@@ -2688,9 +2754,52 @@ function spawnConfetti() {
   document.body.appendChild(el);
   setTimeout(()=>el.remove(), 1600);
 }
+// ══════════════════════════════════════════════════════════════════
+// BANNER SCROLLER
+// ══════════════════════════════════════════════════════════════════
+(function initFadeBanner() {
+  const items = [
+    '🔥 <strong style="color:#FFD700">عرض خاص:</strong> اشترك الآن بسعر <span style="color:#D4AF37; font-size:15px; text-decoration: underline;">100 ألف</span> لكل المواد',
+    '🏆 <strong style="color:#D4AF37">منصة الميزان</strong> — أول نظام LMS مخصص لتنظيم الدراسة',
+    '📑 <strong style="color:#D4AF37">الجدول الذكي</strong> — يتابع واجباتك وحضورك تلقائياً',
+    '👨‍👩‍👦 <strong style="color:#D4AF37">تقرير ولي الأمر</strong> — تقرير يومي للأهل بالأرقام',
+    '📝 <strong style="color:#D4AF37">بوابة الامتحانات</strong> — امتحانات تحاكي الواقع وتصحيح دقيق',
+    '📊 <strong style="color:#D4AF37">رادار التطور</strong> — يحلل مستواك ويحدد تقدمك وتراجعك'
+  ];
+
+  const textElement = document.getElementById('bannerFadeText');
+  let currentIndex = 0;
+
+  function updateText() {
+    // 1. إخفاء النص الحالي
+    textElement.style.opacity = 0;
+    // إضافة حركة بسيطة للأسفل عند الاختفاء
+    textElement.style.transform = 'translateY(5px)';
+
+    setTimeout(() => {
+      // 2. تغيير المحتوى
+      textElement.innerHTML = items[currentIndex];
+      
+      // 3. إظهار النص الجديد مع حركة صعود
+      textElement.style.opacity = 1;
+      textElement.style.transform = 'translateY(0)';
+
+      // 4. الانتقال للعنصر التالي
+      currentIndex = (currentIndex + 1) % items.length;
+    }, 600); 
+  }
+
+  // التشغيل الأولي
+  updateText();
+  
+  // التبديل كل 4 ثوانٍ
+  setInterval(updateText, 4000);
+})();
+
 
 // ── INIT ──
 updatePomUI();
+
 </script>
 
 </body>
